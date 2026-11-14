@@ -1,102 +1,85 @@
-/* ---------- Configuration & Planet Definitions ---------- */
-window.COSMIC_CONFIG = {
-  orbitSpeedFactor: 48.7,
-  sunRadius: 17,
-  introLines: [
-    { id: 'l1', text: 'WELCOME TO', speed: 70, pause: 350 },
-    { id: 'l2', text: 'Cosmic Explorer', speed: 70, pause: 450 },
-    { id: 'l3', text: 'A journey through the Solar System in 3D. Scroll down, choose a planet, and fly to it.', speed: 18, pause: 400 },
-    { id: 'l4', text: 'ONE STAR · EIGHT PLANETS · ONE JOURNEY', speed: 38, pause: 0 }
-  ]
-};
-
-window.PLANET_DEFS = [
-  { name: 'Mercury', a: 32, r: 2.6, tex: 'mercury', ang: 0.6, tilt: 0.03, spin: 0.25, fact: 'The smallest planet. One year lasts 88 days.' },
-  { name: 'Venus', a: 48, r: 4.4, tex: 'venus', ang: 2.4, tilt: 3.09, spin: -0.1, fact: 'The hottest surface, around 465 °C.', glow: [0xffd9a0, 2.6] },
-  { name: 'Earth', a: 65, r: 4.7, tex: 'earth', ang: 4.1, tilt: 0.41, spin: 0.7, fact: 'Our home, and the only world known to have life.', glow: [0x5aa0ff, 3.0], clouds: true, moon: true },
-  { name: 'Mars', a: 83, r: 3.4, tex: 'mars', ang: 5.5, tilt: 0.44, spin: 0.68, fact: 'Home of Olympus Mons, the tallest known volcano.', glow: [0xff8a5a, 4.2] },
-  { name: 'Jupiter', a: 126, r: 11.5, tex: 'jupiter', ang: 6.0, tilt: 0.05, spin: 1.4, fact: 'The largest planet. Its Great Red Spot is a giant storm.' },
-  { name: 'Saturn', a: 166, r: 9.6, tex: 'saturn', ang: 3.3, tilt: 0.47, spin: 1.2, fact: 'Famous for its wide rings of ice and rock.', rings: true },
-  { name: 'Uranus', a: 202, r: 6.6, tex: 'uranus', ang: 4.8, tilt: 1.7, spin: -0.8, fact: 'An ice giant that spins on its side.', glow: [0x9fe6ee, 3.2] },
-  { name: 'Neptune', a: 234, r: 6.3, tex: 'neptune', ang: 4.0, tilt: 0.5, spin: 0.9, fact: 'The windiest planet, with the fastest winds measured.', glow: [0x4f7cff, 3.2] }
-];
-
-window.DEFAULT_ROW_LABELS = [
-  'MEAN RADIUS', 'MASS', 'SURFACE GRAVITY', 'DISTANCE FROM SUN', 'ORBITAL PERIOD', 'MEAN TEMPERATURE', 'KNOWN MOONS'
-];
-
-/* ---------- Stories & NASA Fact Sheet Data ---------- */
 window.PLANET_DATA = {
-  Mercury: {
-    type: 'TERRESTRIAL PLANET', sub: 'The Swift Messenger',
-    story: 'The closest planet to the Sun races around it in just 88 Earth days. Its cratered surface swings from about 430 °C in sunlight to −180 °C at night, because it has almost no air to hold the heat.',
-    stats: [['57.9M', 'KM FROM THE SUN'], ['88 days', 'ONE YEAR'], ['167 °C', 'AVERAGE TEMP']],
-    rows: ['2,439.7 km', '0.330 × 10²⁴ kg', '3.7 m/s²', '57.9 million km · 0.387 AU', '88.0 Earth days', '167 °C', '0']
+  defs: [
+    { name: 'Mercury', a: 32, r: 2.6, tex: 'mercury', ang: 0.6, tilt: 0.03, spin: 0.25, fact: 'The smallest planet. One year lasts 88 days.' },
+    { name: 'Venus', a: 48, r: 4.4, tex: 'venus', ang: 2.4, tilt: 3.09, spin: -0.1, fact: 'The hottest surface, around 465 °C.', glow: [0xffd9a0, 2.6] },
+    { name: 'Earth', a: 65, r: 4.7, tex: 'earth', ang: 4.1, tilt: 0.41, spin: 0.7, fact: 'Our home, and the only world known to have life.', glow: [0x5aa0ff, 3.0], clouds: true, moon: true },
+    { name: 'Mars', a: 83, r: 3.4, tex: 'mars', ang: 5.5, tilt: 0.44, spin: 0.68, fact: 'Home of Olympus Mons, the tallest known volcano.', glow: [0xff8a5a, 4.2] },
+    { name: 'Jupiter', a: 126, r: 11.5, tex: 'jupiter', ang: 6.0, tilt: 0.05, spin: 1.4, fact: 'The largest planet. Its Great Red Spot is a giant storm.' },
+    { name: 'Saturn', a: 166, r: 9.6, tex: 'saturn', ang: 3.3, tilt: 0.47, spin: 1.2, fact: 'Famous for its wide rings of ice and rock.', rings: true },
+    { name: 'Uranus', a: 202, r: 6.6, tex: 'uranus', ang: 4.8, tilt: 1.7, spin: -0.8, fact: 'An ice giant that spins on its side.', glow: [0x9fe6ee, 3.2] },
+    { name: 'Neptune', a: 234, r: 6.3, tex: 'neptune', ang: 4.0, tilt: 0.5, spin: 0.9, fact: 'The windiest planet, with the fastest winds measured.', glow: [0x4f7cff, 3.2] }
+  ],
+
+  PD: {
+    Mercury: { type: 'TERRESTRIAL PLANET', sub: 'The Swift Messenger',
+      story: 'The closest planet to the Sun races around it in just 88 Earth days. Its cratered surface swings from about 430 °C in sunlight to −180 °C at night, because it has almost no air to hold the heat.',
+      stats: [['57.9M', 'KM FROM THE SUN'], ['88 days', 'ONE YEAR'], ['167 °C', 'AVERAGE TEMP']],
+      rows: ['2,439.7 km', '0.330 × 10²⁴ kg', '3.7 m/s²', '57.9 million km · 0.387 AU', '88.0 Earth days', '167 °C', '0'] },
+    Venus: { type: 'TERRESTRIAL PLANET', sub: 'The Veiled Furnace',
+      story: 'Thick clouds of carbon dioxide trap heat and make Venus the hottest planet, even hotter than Mercury. It spins backwards, so the Sun rises in the west.',
+      stats: [['108.2M', 'KM FROM THE SUN'], ['225 days', 'ONE YEAR'], ['464 °C', 'AVERAGE TEMP']],
+      rows: ['6,051.8 km', '4.87 × 10²⁴ kg', '8.9 m/s²', '108.2 million km · 0.723 AU', '224.7 Earth days', '464 °C', '0'] },
+    Earth: { type: 'TERRESTRIAL PLANET', sub: 'The Blue Home',
+      story: 'About 71% of Earth is covered by water. It is the only world we know that has life, protected by a thick atmosphere and a magnetic field.',
+      stats: [['149.6M', 'KM FROM THE SUN'], ['365 days', 'ONE YEAR'], ['15 °C', 'AVERAGE TEMP']],
+      rows: ['6,371.0 km', '5.97 × 10²⁴ kg', '9.8 m/s²', '149.6 million km · 1.000 AU', '365.2 days', '15 °C', '1'] },
+    Mars: { type: 'TERRESTRIAL PLANET', sub: 'The Rust Wanderer',
+      story: 'A cold desert world with thin air and two small moons. It has Olympus Mons, the tallest known volcano in the Solar System, and a canyon system about 4,000 km long.',
+      stats: [['227.9M', 'KM FROM THE SUN'], ['687 days', 'ONE YEAR'], ['−65 °C', 'AVERAGE TEMP']],
+      rows: ['3,389.5 km', '0.642 × 10²⁴ kg', '3.7 m/s²', '227.9 million km · 1.524 AU', '687.0 Earth days', '−65 °C', '2'] },
+    Jupiter: { type: 'GAS GIANT', sub: 'The Storm King',
+      story: 'Jupiter holds more than twice the mass of all the other planets put together. Its Great Red Spot is a storm wider than Earth that people have watched for over 150 years.',
+      stats: [['778.5M', 'KM FROM THE SUN'], ['11.9 years', 'ONE YEAR'], ['−110 °C', 'CLOUD-TOP TEMP']],
+      rows: ['69,911 km', '1,898 × 10²⁴ kg', '23.1 m/s²', '778.5 million km · 5.20 AU', '11.86 Earth years', '−110 °C', '95+'] },
+    Saturn: { type: 'GAS GIANT', sub: 'The Ringed Jewel',
+      story: 'Saturn’s rings are made of countless pieces of ice and rock, from tiny grains to boulders. The planet is so light for its size that it would float in water, if a bath that big existed.',
+      stats: [['1,432M', 'KM FROM THE SUN'], ['29.5 years', 'ONE YEAR'], ['−140 °C', 'CLOUD-TOP TEMP']],
+      rows: ['58,232 km', '568 × 10²⁴ kg', '9.0 m/s²', '1,432 million km · 9.58 AU', '29.45 Earth years', '−140 °C', '270+'] },
+    Uranus: { type: 'ICE GIANT', sub: 'The Tilted Giant',
+      story: 'Uranus spins on its side, tilted about 98 degrees, so each pole faces the Sun in turn during its 84-year orbit. Methane in its air gives it a pale blue-green colour.',
+      stats: [['2,867M', 'KM FROM THE SUN'], ['84 years', 'ONE YEAR'], ['−195 °C', 'CLOUD-TOP TEMP']],
+      rows: ['25,362 km', '86.8 × 10²⁴ kg', '8.7 m/s²', '2,867 million km · 19.2 AU', '84.0 Earth years', '−195 °C', '28+'] },
+    Neptune: { type: 'ICE GIANT', sub: 'The Distant Blue',
+      story: 'Neptune is the farthest planet and has the fastest winds measured in the Solar System, over 2,000 km/h. Sunlight takes about four hours to reach it.',
+      stats: [['4,515M', 'KM FROM THE SUN'], ['165 years', 'ONE YEAR'], ['−200 °C', 'CLOUD-TOP TEMP']],
+      rows: ['24,622 km', '102 × 10²⁴ kg', '11.0 m/s²', '4,515 million km · 30.1 AU', '164.8 Earth years', '−200 °C', '16'] },
+    Sun: { type: 'G-TYPE MAIN-SEQUENCE STAR', sub: 'The Furnace at the Centre', tag: 'MEASURED', src: 'Source: NASA Sun Fact Sheet',
+      labels: ['MEAN RADIUS', 'MASS', 'SURFACE GRAVITY', 'DISTANCE FROM EARTH', 'ROTATION PERIOD', 'SURFACE TEMPERATURE', 'CORE TEMPERATURE'],
+      story: 'The Sun holds 99.8% of all the mass in the Solar System. In its core, hydrogen fuses into helium, and about 4 million tonnes of matter turn into energy every second. That light takes 8 minutes 20 seconds to reach Earth.',
+      stats: [['99.8%', 'OF SOLAR SYSTEM MASS'], ['8 min 20 s', 'LIGHT TO EARTH'], ['5,500 °C', 'SURFACE TEMP']],
+      rows: ['695,700 km', '1.989 × 10³⁰ kg', '274 m/s²', '149.6 million km · 1 AU', '≈ 25 Earth days (equator)', '≈ 5,500 °C', '≈ 15 million °C'],
+      note: 'The Sun is not solid, so it spins faster at its equator than at its poles. It is about 4.6 billion years old and is roughly 73% hydrogen and 25% helium by mass.' },
+    Moon: { type: 'NATURAL SATELLITE', sub: 'The Silent Companion', tag: 'MEASURED', src: 'Source: NASA Moon Fact Sheet',
+      labels: ['MEAN RADIUS', 'MASS', 'SURFACE GRAVITY', 'DISTANCE FROM EARTH', 'ORBITAL PERIOD', 'TEMPERATURE RANGE', 'MOVING AWAY'],
+      story: 'The Moon always shows us the same face, because it turns once for every orbit it makes. It is slowly drifting away from Earth, about 3.8 cm every year. Twelve people have walked on it, during six Apollo landings between 1969 and 1972.',
+      stats: [['384,400', 'KM FROM EARTH'], ['27.3 days', 'ONE ORBIT'], ['1/6', 'OF EARTH’S GRAVITY']],
+      rows: ['1,737.4 km', '7.346 × 10²² kg', '1.62 m/s²', '384,400 km (average)', '27.3 Earth days', '−173 °C to 127 °C', '3.8 cm per year'],
+      note: 'Distance and period are averages. The Moon’s orbit is slightly oval, so its distance from Earth changes during each month.' },
+    'Asteroid Belt': { type: 'ASTEROID BELT', sub: 'The Rubble Between Worlds', tag: 'ESTIMATED', src: 'Source: NASA Solar System Exploration',
+      labels: ['LOCATION', 'DISTANCE FROM SUN', 'TOTAL MASS', 'LARGEST BODY', 'KNOWN ASTEROIDS', 'ORBITAL PERIOD', 'SPACING'],
+      story: 'Between Mars and Jupiter orbit more than a million known rocky bodies, the leftovers of a planet that never formed. All of them together weigh only about 3% as much as the Moon. The rocks are so far apart that spacecraft cross the belt safely.',
+      stats: [['2.7 AU', 'AVERAGE DISTANCE'], ['3%', 'OF THE MOON’S MASS'], ['1M+', 'KNOWN ASTEROIDS']],
+      rows: ['Between Mars and Jupiter', '2.2 – 3.2 AU · 330 – 480 million km', '≈ 2.4 × 10²¹ kg', 'Ceres · 940 km wide', 'Over 1 million', '≈ 3.3 – 5.7 Earth years', 'Hundreds of thousands of km'],
+      note: 'Belt figures are estimates and keep changing as new asteroids are found. The 3D rocks here are drawn much closer together than in real life, so that you can see them.' },
+    'Milky Way': { level: 'LEVEL 02', type: 'BARRED SPIRAL GALAXY', sub: 'Our Island of Stars', tag: 'ESTIMATED', src: 'Source: NASA and ESA galaxy data',
+      labels: ['DIAMETER', 'STARS', 'AGE OF OLDEST STARS', 'SUN TO CENTRE', 'ONE SUN ORBIT', 'CENTRAL BLACK HOLE', 'GALAXY TYPE'],
+      story: 'The Milky Way holds hundreds of billions of stars. The Sun sits in a quiet spiral arm, about 26,000 light-years from the centre, where a black hole called Sagittarius A* weighs about 4 million Suns. One trip around the galaxy takes the Sun roughly 230 million years.',
+      stats: [['100,000', 'LIGHT-YEARS ACROSS'], ['26,000', 'LIGHT-YEARS TO CENTRE'], ['230M yrs', 'ONE SUN ORBIT']],
+      rows: ['≈ 100,000 light-years', '100 – 400 billion', '≈ 13 billion years', '≈ 26,000 light-years', '≈ 230 million years', 'Sagittarius A* · ≈ 4 million Suns', 'Barred spiral'],
+      note: 'We see our own galaxy from inside, so this picture is a model built from many measurements. Star counts are estimates.' },
+    'Local Group': { level: 'LEVEL 03', type: 'GROUP OF GALAXIES', sub: 'Our Cosmic Neighbourhood', tag: 'ESTIMATED', src: 'Source: NASA and ESA galaxy data',
+      labels: ['WIDTH', 'KNOWN MEMBERS', 'LARGEST MEMBER', 'SECOND LARGEST', 'THIRD LARGEST', 'NEAREST BIG NEIGHBOUR', 'ANDROMEDA SPEED'],
+      story: 'The Local Group is a small family of more than 80 galaxies, spread over about 10 million light-years. Andromeda, the biggest, is 2.5 million light-years away and is moving towards the Milky Way. The two may merge in several billion years.',
+      stats: [['80+', 'KNOWN GALAXIES'], ['2.5M', 'LIGHT-YEARS TO ANDROMEDA'], ['≈ 10M', 'LIGHT-YEARS ACROSS']],
+      rows: ['≈ 10 million light-years', '80+ galaxies', 'Andromeda (M31)', 'Milky Way', 'Triangulum (M33)', 'Andromeda · 2.5 million light-years', '≈ 110 km/s towards us'],
+      note: 'Sizes are not to scale here, so that the galaxies stay visible. The future merger is a prediction, not a measurement.' },
+    'Observable Universe': { level: 'LEVEL 04', type: 'THE OBSERVABLE UNIVERSE', sub: 'Everything We Can See', tag: 'ESTIMATED', src: 'Source: NASA and ESA Planck mission results',
+      labels: ['DIAMETER', 'AGE', 'GALAXIES', 'ORDINARY MATTER', 'DARK MATTER', 'DARK ENERGY', 'BACKGROUND GLOW'],
+      story: 'The observable universe is about 93 billion light-years wide, even though it is only 13.8 billion years old, because space itself has been stretching. It holds hundreds of billions of galaxies, joined in a web of filaments around giant empty voids.',
+      stats: [['93 bn', 'LIGHT-YEARS ACROSS'], ['13.8 bn', 'YEARS OLD'], ['≈ 5%', 'ORDINARY MATTER']],
+      rows: ['≈ 93 billion light-years', '13.8 billion years', '200 billion to 2 trillion', '≈ 5%', '≈ 27%', '≈ 68%', '2.725 K (−270.4 °C)'],
+      note: 'The web shown here is a sketch of the real pattern, not a map. The glowing shell is the edge of what light has had time to reach us from. Nothing is known beyond it.' }
   },
-  Venus: {
-    type: 'TERRESTRIAL PLANET', sub: 'The Veiled Furnace',
-    story: 'Thick clouds of carbon dioxide trap heat and make Venus the hottest planet, even hotter than Mercury. It spins backwards, so the Sun rises in the west.',
-    stats: [['108.2M', 'KM FROM THE SUN'], ['225 days', 'ONE YEAR'], ['464 °C', 'AVERAGE TEMP']],
-    rows: ['6,051.8 km', '4.87 × 10²⁴ kg', '8.9 m/s²', '108.2 million km · 0.723 AU', '224.7 Earth days', '464 °C', '0']
-  },
-  Earth: {
-    type: 'TERRESTRIAL PLANET', sub: 'The Blue Home',
-    story: 'About 71% of Earth is covered by water. It is the only world we know that has life, protected by a thick atmosphere and a magnetic field.',
-    stats: [['149.6M', 'KM FROM THE SUN'], ['365 days', 'ONE YEAR'], ['15 °C', 'AVERAGE TEMP']],
-    rows: ['6,371.0 km', '5.97 × 10²⁴ kg', '9.8 m/s²', '149.6 million km · 1.000 AU', '365.2 days', '15 °C', '1']
-  },
-  Mars: {
-    type: 'TERRESTRIAL PLANET', sub: 'The Rust Wanderer',
-    story: 'A cold desert world with thin air and two small moons. It has Olympus Mons, the tallest known volcano in the Solar System, and a canyon system about 4,000 km long.',
-    stats: [['227.9M', 'KM FROM THE SUN'], ['687 days', 'ONE YEAR'], ['−65 °C', 'AVERAGE TEMP']],
-    rows: ['3,389.5 km', '0.642 × 10²⁴ kg', '3.7 m/s²', '227.9 million km · 1.524 AU', '687.0 Earth days', '−65 °C', '2']
-  },
-  Jupiter: {
-    type: 'GAS GIANT', sub: 'The Storm King',
-    story: 'Jupiter holds more than twice the mass of all the other planets put together. Its Great Red Spot is a storm wider than Earth that people have watched for over 150 years.',
-    stats: [['778.5M', 'KM FROM THE SUN'], ['11.9 years', 'ONE YEAR'], ['−110 °C', 'CLOUD-TOP TEMP']],
-    rows: ['69,911 km', '1,898 × 10²⁴ kg', '23.1 m/s²', '778.5 million km · 5.20 AU', '11.86 Earth years', '−110 °C', '95+']
-  },
-  Saturn: {
-    type: 'GAS GIANT', sub: 'The Ringed Jewel',
-    story: 'Saturn’s rings are made of countless pieces of ice and rock, from tiny grains to boulders. The planet is so light for its size that it would float in water, if a bath that big existed.',
-    stats: [['1,432M', 'KM FROM THE SUN'], ['29.5 years', 'ONE YEAR'], ['−140 °C', 'CLOUD-TOP TEMP']],
-    rows: ['58,232 km', '568 × 10²⁴ kg', '9.0 m/s²', '1,432 million km · 9.58 AU', '29.45 Earth years', '−140 °C', '270+']
-  },
-  Uranus: {
-    type: 'ICE GIANT', sub: 'The Tilted Giant',
-    story: 'Uranus spins on its side, tilted about 98 degrees, so each pole faces the Sun in turn during its 84-year orbit. Methane in its air gives it a pale blue-green colour.',
-    stats: [['2,867M', 'KM FROM THE SUN'], ['84 years', 'ONE YEAR'], ['−195 °C', 'CLOUD-TOP TEMP']],
-    rows: ['25,362 km', '86.8 × 10²⁴ kg', '8.7 m/s²', '2,867 million km · 19.2 AU', '84.0 Earth years', '−195 °C', '28+']
-  },
-  Neptune: {
-    type: 'ICE GIANT', sub: 'The Distant Blue',
-    story: 'Neptune is the farthest planet and has the fastest winds measured in the Solar System, over 2,000 km/h. Sunlight takes about four hours to reach it.',
-    stats: [['4,515M', 'KM FROM THE SUN'], ['165 years', 'ONE YEAR'], ['−200 °C', 'CLOUD-TOP TEMP']],
-    rows: ['24,622 km', '102 × 10²⁴ kg', '11.0 m/s²', '4,515 million km · 30.1 AU', '164.8 Earth years', '−200 °C', '16']
-  },
-  Sun: {
-    type: 'G-TYPE MAIN-SEQUENCE STAR', sub: 'The Furnace at the Centre', tag: 'MEASURED', src: 'Source: NASA Sun Fact Sheet',
-    labels: ['MEAN RADIUS', 'MASS', 'SURFACE GRAVITY', 'DISTANCE FROM EARTH', 'ROTATION PERIOD', 'SURFACE TEMPERATURE', 'CORE TEMPERATURE'],
-    story: 'The Sun holds 99.8% of all the mass in the Solar System. In its core, hydrogen fuses into helium, and about 4 million tonnes of matter turn into energy every second. That light takes 8 minutes 20 seconds to reach Earth.',
-    stats: [['99.8%', 'OF SOLAR SYSTEM MASS'], ['8 min 20 s', 'LIGHT TO EARTH'], ['5,500 °C', 'SURFACE TEMP']],
-    rows: ['695,700 km', '1.989 × 10³⁰ kg', '274 m/s²', '149.6 million km · 1 AU', '≈ 25 Earth days (equator)', '≈ 5,500 °C', '≈ 15 million °C'],
-    note: 'The Sun is not solid, so it spins faster at its equator than at its poles. It is about 4.6 billion years old and is roughly 73% hydrogen and 25% helium by mass.'
-  },
-  Moon: {
-    type: 'NATURAL SATELLITE', sub: 'The Silent Companion', tag: 'MEASURED', src: 'Source: NASA Moon Fact Sheet',
-    labels: ['MEAN RADIUS', 'MASS', 'SURFACE GRAVITY', 'DISTANCE FROM EARTH', 'ORBITAL PERIOD', 'TEMPERATURE RANGE', 'MOVING AWAY'],
-    story: 'The Moon always shows us the same face, because it turns once for every orbit it makes. It is slowly drifting away from Earth, about 3.8 cm every year. Twelve people have walked on it, during six Apollo landings between 1969 and 1972.',
-    stats: [['384,400', 'KM FROM EARTH'], ['27.3 days', 'ONE ORBIT'], ['1/6', 'OF EARTH’S GRAVITY']],
-    rows: ['1,737.4 km', '7.346 × 10²² kg', '1.62 m/s²', '384,400 km (average)', '27.3 Earth days', '−173 °C to 127 °C', '3.8 cm per year'],
-    note: 'Distance and period are averages. The Moon’s orbit is slightly oval, so its distance from Earth changes during each month.'
-  },
-  'Asteroid Belt': {
-    type: 'ASTEROID BELT', sub: 'The Rubble Between Worlds', tag: 'ESTIMATED', src: 'Source: NASA Solar System Exploration',
-    labels: ['LOCATION', 'DISTANCE FROM SUN', 'TOTAL MASS', 'LARGEST BODY', 'KNOWN ASTEROIDS', 'ORBITAL PERIOD', 'SPACING'],
-    story: 'Between Mars and Jupiter orbit more than a million known rocky bodies, the leftovers of a planet that never formed. All of them together weigh only about 3% as much as the Moon. The rocks are so far apart that spacecraft cross the belt safely.',
-    stats: [['2.7 AU', 'AVERAGE DISTANCE'], ['3%', 'OF THE MOON’S MASS'], ['1M+', 'KNOWN ASTEROIDS']],
-    rows: ['Between Mars and Jupiter', '2.2 – 3.2 AU · 330 – 480 million km', '≈ 2.4 × 10²¹ kg', 'Ceres · 940 km wide', 'Over 1 million', '≈ 3.3 – 5.7 Earth years', 'Hundreds of thousands of km'],
-    note: 'Belt figures are estimates and keep changing as new asteroids are found. The 3D rocks here are drawn much closer together than in real life, so that you can see them.'
-  }
+
+  ROW_LABELS: ['MEAN RADIUS', 'MASS', 'SURFACE GRAVITY', 'DISTANCE FROM SUN', 'ORBITAL PERIOD', 'MEAN TEMPERATURE', 'KNOWN MOONS']
 };
