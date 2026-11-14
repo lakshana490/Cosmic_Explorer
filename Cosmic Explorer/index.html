@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cosmic Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="stage" aria-hidden="true"></div>
+  <div class="veil" id="veil"></div>
+
+  <main>
+    <div class="hero" id="hero">
+      <p class="eyebrow" id="l1" aria-label="Welcome to"></p>
+      <h1 class="title" id="l2" aria-label="Cosmic Explorer"></h1>
+      <p class="lede" id="l3"></p>
+      <p class="meta" id="l4"></p>
+    </div>
+  </main>
+
+  <div class="brand" id="brand"><i></i><span>COSMIC EXPLORER</span></div>
+  <div class="level" id="level">LEVEL 01<b>THE SOLAR SYSTEM</b></div>
+
+  <div class="cue">
+    <div id="cue-a" style="display:flex;flex-direction:column;align-items:center;gap:12px">
+      <div class="txt">SCROLL TO ENTER</div>
+      <div class="bar"></div>
+    </div>
+    <div id="cue-b" class="cue"><div class="txt">DRAG TO LOOK AROUND &middot; CLICK A PLANET TO FLY THERE</div></div>
+  </div>
+
+  <p class="credit">Planet textures: <a href="https://www.solarsystemscope.com/textures" target="_blank" rel="noopener">Solar System Scope</a>, CC BY 4.0</p>
+
+  <button class="skip" id="skip" type="button">SKIP INTRO</button>
+  <div class="vbtns" id="vbtns" style="opacity:0;visibility:hidden">
+    <button class="vbtn" id="v-reset" type="button">RESET VIEW</button>
+    <button class="vbtn" id="v-top" type="button">BACK TO START</button>
+  </div>
+
+  <!-- Planet / Body Detail Page UI -->
+  <div class="pui" id="pui" inert>
+    <div class="pg-top" id="pg-dashes"></div>
+    <div class="pg-count" aria-hidden="true"><b id="p-cur">01</b> / <span id="p-tot">11</span></div>
+    <div class="pg-left">
+      <div class="pg-eyebrow" id="p-eyebrow"></div>
+      <h2 class="pg-name" id="p-name"></h2>
+      <div class="pg-story-wrap" id="pg-story-wrap">
+        <div class="pg-sub" id="p-sub"></div>
+        <p class="pg-story" id="p-story"></p>
+        <div class="pg-stats">
+          <div><b id="s0v"></b><span id="s0l"></span></div>
+          <div><b id="s1v"></b><span id="s1l"></span></div>
+          <div><b id="s2v"></b><span id="s2l"></span></div>
+        </div>
+        <div class="pg-actions">
+          <button class="btn" id="p-explore" type="button" aria-expanded="false">EXPLORE DATA <svg width="16" height="10" viewBox="0 0 16 10" fill="none" stroke="#e8a33d" stroke-width="1.5" aria-hidden="true"><path d="M0 5H14M10 1L14 5L10 9"></path></svg></button>
+          <button class="btn quiet" id="p-back" type="button">&larr; SOLAR SYSTEM</button>
+        </div>
+      </div>
+      <div class="pg-data" id="pg-data">
+        <div class="pg-datahead"><span class="tag" id="p-tag">MEASURED</span><span class="src" id="p-src">Source: NASA Planetary Fact Sheet</span></div>
+        <div class="rows" id="p-rows"></div>
+        <p class="note" id="p-note">Moon counts keep growing as astronomers find new ones. Temperatures for the giant planets are measured at the 1 bar pressure level.</p>
+        <div class="pg-actions"><button class="btn" id="p-story-btn" type="button">&larr; BACK TO STORY</button><button class="btn quiet" id="p-back2" type="button">SOLAR SYSTEM</button></div>
+      </div>
+    </div>
+    <div class="pg-hint">DRAG TO ROTATE &middot; SCROLL OUT TO LEAVE</div>
+    <div class="pg-zoom">
+      <button type="button" id="z-in" aria-label="Zoom in">+</button>
+      <button type="button" id="z-out" aria-label="Zoom out, and leave the planet if already far">&minus;</button>
+    </div>
+    <div class="pg-nav">
+      <button class="nav-btn" id="p-prev" type="button"><span aria-hidden="true">&lsaquo;</span><span id="p-prev-name"></span></button>
+      <button class="nav-btn" id="p-next" type="button"><span id="p-next-name"></span><span aria-hidden="true">&rsaquo;</span></button>
+    </div>
+  </div>
+
+  <div class="ring" id="ring"></div>
+  <div class="tip" id="tip"><b id="tip-name"></b><span id="tip-fact"></span><em>CLICK TO EXPLORE</em></div>
+  <div class="toast" id="toast" role="status"></div>
+  <div class="nogl" id="nogl">Your browser could not start 3D graphics, so the solar system cannot be shown here.</div>
+  <div class="loader" id="loader"><div>PREPARING THE COSMOS</div><i></i></div>
+
+  <div id="scroller" aria-hidden="true"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
