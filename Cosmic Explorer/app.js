@@ -41,7 +41,7 @@
         paintLine(l, n, true);
         await sleep(l.speed + Math.random() * l.speed * 0.6);
       }
-      paintLine(l, l.text.length, false);
+      paintLine(l, l.text.length, i === lines.length - 1 ? false : false);
       await sleep(l.pause);
     }
   }
@@ -228,7 +228,7 @@
         var r = mix(28, 78, t), g = mix(56, 120, t), b = mix(160, 232, t);
         var streak = smooth(0.74, 0.86, f) * 0.5;
         r = mix(r, 235, streak); g = mix(g, 240, streak); b = mix(b, 250, streak);
-        var du = (u - 0.4), dv = v - 0.56, e = du * du / 0.0036 + dv * dv / 0.0016;
+        var du = (u - 0.4) , dv = v - 0.56, e = du * du / 0.0036 + dv * dv / 0.0016;
         if (e < 1) { var q = 1 - e; r = mix(r, 12, q * 0.7); g = mix(g, 28, q * 0.7); b = mix(b, 96, q * 0.7); }
         set(r, g, b);
       });
@@ -322,9 +322,19 @@
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
     });
   };
-  var defs = window.PLANET_DATA.defs;
+  var defs = [
+    { name: 'Mercury', a: 32, r: 2.6, tex: 'mercury', ang: 0.6, tilt: 0.03, spin: 0.25, fact: 'The smallest planet. One year lasts 88 days.' },
+    { name: 'Venus', a: 48, r: 4.4, tex: 'venus', ang: 2.4, tilt: 3.09, spin: -0.1, fact: 'The hottest surface, around 465 °C.', glow: [0xffd9a0, 2.6] },
+    { name: 'Earth', a: 65, r: 4.7, tex: 'earth', ang: 4.1, tilt: 0.41, spin: 0.7, fact: 'Our home, and the only world known to have life.', glow: [0x5aa0ff, 3.0], clouds: true, moon: true },
+    { name: 'Mars', a: 83, r: 3.4, tex: 'mars', ang: 5.5, tilt: 0.44, spin: 0.68, fact: 'Home of Olympus Mons, the tallest known volcano.', glow: [0xff8a5a, 4.2] },
+    { name: 'Jupiter', a: 126, r: 11.5, tex: 'jupiter', ang: 6.0, tilt: 0.05, spin: 1.4, fact: 'The largest planet. Its Great Red Spot is a giant storm.' },
+    { name: 'Saturn', a: 166, r: 9.6, tex: 'saturn', ang: 3.3, tilt: 0.47, spin: 1.2, fact: 'Famous for its wide rings of ice and rock.', rings: true },
+    { name: 'Uranus', a: 202, r: 6.6, tex: 'uranus', ang: 4.8, tilt: 1.7, spin: -0.8, fact: 'An ice giant that spins on its side.', glow: [0x9fe6ee, 3.2] },
+    { name: 'Neptune', a: 234, r: 6.3, tex: 'neptune', ang: 4.0, tilt: 0.5, spin: 0.9, fact: 'The windiest planet, with the fastest winds measured.', glow: [0x4f7cff, 3.2] }
+  ];
   var K = 48.7;
   var planets = [];
+  var ringPts = [];
   defs.forEach(function (d) {
     var group = new THREE.Group();
     var tilt = new THREE.Group(); tilt.rotation.z = d.tilt; group.add(tilt); d.tiltGroup = tilt;
@@ -364,10 +374,12 @@
     d.group = group; d.mesh = mesh; d.omega = K / Math.pow(d.a, 1.5);
     scene.add(group);
     planets.push(d);
+    // orbit line
     var pts = [];
     for (var s = 0; s <= 256; s++) { var an = s / 256 * 6.2832; pts.push(new THREE.Vector3(Math.cos(an) * d.a, 0, Math.sin(an) * d.a)); }
     var line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0x8a97b4, transparent: true, opacity: 0.28 }));
     scene.add(line);
+    // label
     var lab = document.createElement('div'); lab.className = 'plabel'; lab.textContent = d.name.toUpperCase();
     document.body.appendChild(lab); d.label = lab;
   });
@@ -405,7 +417,7 @@
     var m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), pos = new THREE.Vector3(), sc = new THREE.Vector3(), c = new THREE.Color(), n = 0, guard = 0;
     while (n < N && guard++ < 4000) {
       var rho = -10 + Math.random() * 24, tau = (Math.random() * 2 - 1) * 42, yy = (Math.random() + Math.random() + Math.random() - 1.5) * 3.8;
-      if (Math.hypot(rho + 18, tau - 30) < 8) continue;
+      if (Math.hypot(rho + 18, tau - 30) < 8) continue;      // keep clear of the camera
       var size = 0.2 + Math.pow(Math.random(), 4) * 1.7;
       pos.copy(beltU).multiplyScalar(rho).addScaledVector(beltW, tau); pos.y = yy;
       e.set(Math.random() * 6.28, Math.random() * 6.28, Math.random() * 6.28); q.setFromEuler(e);
@@ -431,8 +443,8 @@
   for (var bs = 0; bs < 180; bs++) { var ba = bs / 180 * 6.2832; beltSamples.push(new THREE.Vector3(Math.cos(ba) * BELT_R, 0, Math.sin(ba) * BELT_R)); }
 
   /* ---------- zoom-out levels: Milky Way, Local Group, observable universe ---------- */
-  var cl = 0;
-  var LEVEL_K = [1, 0.01, 0.03, 0.015];
+  var cl = 0;                                     // 0 = solar system, 1 = Milky Way, 2 = Local Group, 3 = universe
+  var LEVEL_K = [1, 0.01, 0.03, 0.015];           // how small the level below looks inside this level
   var solarGroup = new THREE.Group();
   scene.children.slice().forEach(function (o) { if (o !== starGroup) solarGroup.add(o); });
   scene.add(solarGroup);
@@ -442,9 +454,9 @@
     var m = new THREE.PointsMaterial({ size: size, map: dot, vertexColors: true, sizeAttenuation: false, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: op });
     lv.mats.push({ m: m, o: op }); return m;
   }
-  function lvSprite(lv, color, scale, op, parent) {
+  function lvSprite(lv, color, scale, op, parent, keep) {
     var m = new THREE.SpriteMaterial({ map: dot, color: color, transparent: true, opacity: op, depthWrite: false, blending: THREE.AdditiveBlending });
-    var sp = new THREE.Sprite(m); sp.scale.setScalar(scale); (parent || lv.group).add(sp); lv.mats.push({ m: m, o: op }); return sp;
+    var sp = new THREE.Sprite(m); sp.scale.setScalar(scale); (parent || lv.group).add(sp); lv.mats.push({ m: m, o: op, glow: !keep }); return sp;
   }
   function galaxy(lv, R, n, o) {
     o = o || {};
@@ -468,6 +480,7 @@
     var pts = new THREE.Points(g, lvMat(lv, o.size || 2.3, o.op || 0.9)); pts.frustumCulled = false; return pts;
   }
 
+  /* a painted galaxy disc: log-spiral arms, dust lanes, bar, bulge and clumpy star clouds */
   function galaxyTexture(size, o) {
     var arms = o.arms || 4, wind = o.wind || 2.2, bar = o.bar || 0, seed = o.seed || 1, ph = o.phase || 0;
     function h(x, y) { var v = Math.sin(x * 127.1 + y * 311.7 + seed * 74.7) * 43758.5453; return v - Math.floor(v); }
@@ -498,17 +511,25 @@
   function galaxyPlane(lv, parent, R, size, o) {
     var m = new THREE.MeshBasicMaterial({ map: galaxyTexture(size, o), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, opacity: 1 });
     var g = new THREE.PlaneGeometry(R * 2.1, R * 2.1); g.rotateX(-Math.PI / 2);
-    var mesh = new THREE.Mesh(g, m); mesh.frustumCulled = false; parent.add(mesh); lv.mats.push({ m: m, o: 1 }); discMats.push(m); return mesh;
+    var mesh = new THREE.Mesh(g, m); mesh.frustumCulled = false; parent.add(mesh); lv.mats.push({ m: m, o: 1, plane: true }); discMats.push(m); return mesh;
   }
   function mkLevel(i) { var lv = { group: new THREE.Group(), mats: [], labels: [] }; lv.group.visible = false; scene.add(lv.group); levels[i] = lv; return lv; }
-  function addLabel(lv, text, local, hot, parent, off) {
+  function addLabel(lv, text, local, hot, parent, off, target) {
     var el = document.createElement('div'); el.className = 'plabel'; el.textContent = text; if (hot) el.style.color = 'var(--accent)';
-    document.body.appendChild(el); lv.labels.push({ el: el, pos: local, parent: parent || lv.group, dx: off ? off[0] : 12, dy: off ? off[1] : -7 });
+    document.body.appendChild(el); lv.labels.push({ el: el, pos: local, parent: parent || lv.group, dx: off ? off[0] : 12, dy: off ? off[1] : -7, clk: !!target });
+    if (target) {
+      el.classList.add('clk'); el.setAttribute('role', 'button');
+      el.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var j = bodies.findIndex(function (b) { return b.name === target; });
+        if (mode === 'planet' && j >= 0) goPlanet(j);
+      });
+    }
   }
-  // level 1: the Milky Way
+  // level 1: the Milky Way, with the Sun at the world origin
   (function () {
     var lv = mkLevel(1), R = 1100, inner = new THREE.Group(); lv.group.add(inner); lv.spin = inner; lv.spinRate = 0.03;
-    inner.position.set(0, 0, -R * 0.52);
+    inner.position.set(0, 0, -R * 0.52);              // galaxy centre sits 26,000 ly (0.52 R) behind the Sun
     galaxyPlane(lv, inner, R, narrow ? 512 : 900, { arms: 4, wind: 2.1, bar: 0.9, seed: 3 });
     inner.add(galaxy(lv, R * 0.95, narrow ? 7000 : 16000, { uniform: true, bulge: 0.12, size: 1.5, op: 0.6 }));
     lvSprite(lv, 0xffc886, 260, 0.3, inner); lvSprite(lv, 0xff9a55, 700, 0.07, inner);
@@ -516,18 +537,21 @@
     rx.strokeStyle = '#fff'; rx.lineWidth = 3; rx.beginPath(); rx.arc(32, 32, 24, 0, 6.2832); rx.stroke();
     var rm = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(rc), color: 0xe8a33d, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
     var mk = new THREE.Sprite(rm); mk.scale.setScalar(60); lv.group.add(mk); lv.mats.push({ m: rm, o: 1 });
-    addLabel(lv, 'YOU ARE HERE · THE SUN', new THREE.Vector3(0, 0, 0), true);
-    addLabel(lv, 'SAGITTARIUS A*', new THREE.Vector3(0, 0, 0), false, inner, [34, -52]);
+    addLabel(lv, 'YOU ARE HERE · THE SUN', new THREE.Vector3(0, 0, 0), true, null, [-205, -8]);
+    addLabel(lv, 'SAGITTARIUS A*', new THREE.Vector3(0, 0, 0), false, inner, [34, -52], 'Sagittarius A*');
+    addLabel(lv, 'CRAB PULSAR', new THREE.Vector3(70, 4, 125), false, null, [14, -2], 'Crab Pulsar');
   })();
   // level 2: the Local Group
   (function () {
     var lv = mkLevel(2), root = new THREE.Group(); lv.group.add(root); lv.spin = root; lv.spinRate = 0.008;
     function gal(R, n, at, rx, rz, sd) {
-      var g = new THREE.Group(); g.position.copy(at); g.rotation.set(rx, 0, rz); root.add(g);
-      galaxyPlane(lv, g, R, narrow ? 128 : 256, { arms: 2, wind: 1.6, bar: 0.4, seed: sd, phase: sd }); return g;
+      var w = new THREE.Group(); w.position.copy(at); root.add(w);
+      var tg = new THREE.Group(); w.add(tg); var sg = new THREE.Group(); tg.add(sg);
+      var g = new THREE.Group(); g.rotation.set(rx, 0, rz); sg.add(g);
+      galaxyPlane(lv, g, R, narrow ? 128 : 256, { arms: 2, wind: 1.6, bar: 0.4, seed: sd, phase: sd }); return { wrap: w, tilt: tg, spin: sg };
     }
     var A = new THREE.Vector3(1500, 300, -700), M33 = A.clone().add(new THREE.Vector3(-320, -120, 380));
-    gal(70, 0, new THREE.Vector3(0, 0, 0), 0.5, 0.15, 3); gal(150, 0, A, 0.9, 0.5, 5); gal(48, 0, M33, 1.2, -0.4, 8);
+    lv.gals = { mw: gal(70, 0, new THREE.Vector3(0, 0, 0), 0.5, 0.15, 3), and: gal(150, 0, A, 0.9, 0.5, 5), tri: gal(48, 0, M33, 1.2, -0.4, 8) };
     [[0, 0, 0, 0xffc886, 300, 0.6], [A.x, A.y, A.z, 0xffd6a0, 420, 0.6], [M33.x, M33.y, M33.z, 0xaecbff, 140, 0.4], [75, -40, 95, 0xbfd4ff, 46, 0.55], [115, -70, 60, 0xbfd4ff, 34, 0.5]].forEach(function (q) {
       var sp = lvSprite(lv, q[3], q[4], q[5], root); sp.position.set(q[0], q[1], q[2]);
     });
@@ -539,10 +563,10 @@
     var g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
     root.add(new THREE.Points(g, lvMat(lv, 3.2, 0.85)));
     addLabel(lv, 'MILKY WAY', new THREE.Vector3(0, 0, 0), true, root);
-    addLabel(lv, 'ANDROMEDA · 2.5 MILLION LIGHT-YEARS', A, false, root);
-    addLabel(lv, 'TRIANGULUM', M33, false, root);
+    addLabel(lv, 'ANDROMEDA', A, false, root, [14, -7], 'Andromeda');
+    addLabel(lv, 'TRIANGULUM', M33, false, root, [12, -7], 'Triangulum');
   })();
-  // level 3: the observable universe
+  // level 3: the observable universe, shown as a tilted circular map
   (function () {
     var lv = mkLevel(3), root = new THREE.Group(); lv.group.add(root); root.rotation.x = 0.1;
     var spinG = new THREE.Group(); root.add(spinG); lv.spin = spinG; lv.spinAxis = 'z'; lv.spinRate = 0.004;
@@ -553,13 +577,231 @@
     addLabel(lv, 'WE ARE HERE · THE CENTRE', new THREE.Vector3(0, 0, 0), true, root, [14, 18]);
     addLabel(lv, 'EDGE OF THE OBSERVABLE UNIVERSE', new THREE.Vector3(R * 0.62, R * 0.72, 0), false, root, [-270, -22]);
   })();
+
+  /* ---------- deep-space close-ups: Sagittarius A* (black hole) and the Crab Pulsar (neutron star) ---------- */
+  var closeK = 0, closeK1 = 0, labelK = 0, sgrK = 0, crabK = 0, qTmp = new THREE.Quaternion();
+  var GLSL_NOISE2 = `
+    float h21(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }
+    float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
+      return mix(mix(h21(i), h21(i+vec2(1.0,0.0)), f.x), mix(h21(i+vec2(0.0,1.0)), h21(i+vec2(1.0,1.0)), f.x), f.y); }
+    float fbm(vec2 p){ float a = 0.5, s = 0.0; for (int i = 0; i < 5; i++) { s += a*vn(p); p = p*2.03 + vec2(7.1,3.7); a *= 0.5; } return s; }
+    vec2 rot(vec2 p, float a){ float c = cos(a), s = sin(a); return vec2(c*p.x - s*p.y, s*p.x + c*p.y); }
+  `;
+  var BH_FS = `precision highp float;
+    varying vec2 vUv; uniform float uTime, uElev, uRoll, uFade;
+    ` + GLSL_NOISE2 + `
+    float h31d(vec3 p){ return fract(sin(dot(p, vec3(127.1,311.7,74.7))) * 43758.5453); }
+    // the sky behind the hole: stars and the dusty band of the Milky Way
+    vec3 sky(vec3 d){
+      vec3 sc = d*48.0, id = floor(sc), f = fract(sc) - 0.5;
+      float st = step(0.955, h31d(id))*smoothstep(0.34, 0.0, length(f - (vec3(h31d(id+1.7), h31d(id+3.1), h31d(id+5.3)) - 0.5)*0.5));
+      vec3 sc2 = d*130.0, id2 = floor(sc2), f2 = fract(sc2) - 0.5;
+      float st2 = step(0.975, h31d(id2+9.0))*smoothstep(0.38, 0.0, length(f2));
+      float band = exp(-pow(d.y*3.2, 2.0));
+      float lon = atan(d.z, d.x);
+      vec2 np = vec2(cos(lon), sin(lon))*2.0 + vec2(d.y*6.0, 0.0);
+      float dust = fbm(np*1.8), lane = smoothstep(0.45, 0.7, fbm(np*3.2 + 4.0));
+      vec3 c = vec3(1.0,0.82,0.62)*band*(0.10 + 0.5*dust)*(1.0 - 0.8*lane*band);
+      c += vec3(0.8,0.9,1.0)*(st*(0.6 + 1.6*band) + st2*0.5);
+      return c;
+    }
+    vec3 plasma(float t){
+      vec3 c = mix(vec3(0.5,0.12,0.02), vec3(1.0,0.46,0.1), smoothstep(0.12, 0.45, t));
+      c = mix(c, vec3(1.0,0.78,0.38), smoothstep(0.4, 0.75, t));
+      return mix(c, vec3(1.0,0.97,0.9), smoothstep(0.75, 1.05, t));
+    }
+    void main(){
+      const float HALF = 8.5;
+      const float BCRIT = 5.196152;          // shadow radius for a hole of mass M = 1
+      vec2 p = rot((vUv - 0.5)*2.0*HALF, uRoll);
+      float pl = length(p);
+      float edge = 1.0 - smoothstep(HALF*0.72, HALF*0.98, pl);
+      if (edge <= 0.0) { gl_FragColor = vec4(0.0); return; }
+      float ce = cos(uElev), se = sin(uElev);
+      vec3 e1 = vec3(0.0, se, ce);           // from the hole towards the viewer
+      vec3 up = vec3(0.0, ce, -se);
+      vec3 w = (pl > 0.0001) ? (vec3(1.0,0.0,0.0)*p.x + up*p.y)/pl : vec3(1.0,0.0,0.0);
+      float b = max(pl, 0.0001)*BCRIT;
+      // follow the light ray backwards: u = 1/r obeys u'' = -u + 3 M u^2
+      float u = 0.0, v = 1.0/b, phi = 0.0;
+      const float dphi = 0.075;
+      vec3 acc = vec3(0.0); float T = 1.0;
+      float prevY = 1.0e4*e1.y; vec3 prevPos = e1*1.0e4;
+      bool escaped = false;
+      for (int i = 0; i < 84; i++) {
+        v += (-u + 3.0*u*u)*dphi; u += v*dphi; phi += dphi;
+        if (u >= 0.5) break;                                  // fell through the horizon
+        if (u <= 0.0 || (v < 0.0 && u < 0.004)) { escaped = true; break; }
+        float r = 1.0/u;
+        vec3 dp = cos(phi)*e1 + sin(phi)*w;
+        vec3 pos = r*dp;
+        if (prevY*pos.y < 0.0 && T > 0.02) {                 // the ray crosses the plane of the disc
+          vec3 pc = mix(prevPos, pos, prevY/(prevY - pos.y));
+          float rc = length(pc);
+          if (rc > 6.0 && rc < 26.0) {
+            float a = atan(pc.z, pc.x);
+            float om = 0.45*pow(6.0/rc, 1.5);
+            float a2 = a - uTime*om;
+            vec2 np = vec2(cos(a2), sin(a2))*2.2 + vec2(rc*0.55, 0.0);
+            float n1 = fbm(np), n2 = fbm(np*2.7 + vec2(3.0,8.0));
+            float tex = (0.3 + 1.5*n1*n2 + 0.5*n1)*(0.75 + 0.25*sin(rc*3.0 + n1*5.0));
+            float temp = pow(6.0/rc, 0.75);
+            vec3 th = normalize(vec3(-pc.z, 0.0, pc.x));
+            vec3 dtr = -v*r*r*dp + r*(-sin(phi)*e1 + cos(phi)*w);
+            vec3 dn = -normalize(dtr);
+            float beta = sqrt(1.0/rc);
+            float dop = 1.0/(1.0 - beta*dot(th, dn));
+            float boost = clamp(mix(1.0, pow(dop, 3.0), 0.55), 0.3, 3.5);
+            float al = 0.85*smoothstep(6.0, 6.7, rc)*(1.0 - smoothstep(13.0, 26.0, rc));
+            float Ie = 2.6*pow(6.0/rc, 1.9)*tex*boost;
+            acc += T*al*Ie*plasma(temp*pow(boost, 0.25));
+            T *= 1.0 - 0.9*al;
+          }
+        }
+        prevY = pos.y; prevPos = pos;
+      }
+      if (escaped && pl >= 0.997) acc += T*sky(normalize(cos(phi)*e1 + sin(phi)*w));
+      // sharp photon ring and the bloom around the disc
+      acc += vec3(1.0,0.84,0.6)*exp(-pow((pl - 1.0)*10.0, 2.0))*0.75*step(0.985, pl);
+      acc += vec3(1.0,0.55,0.18)*0.14*exp(-pow(length(vec2(p.x*0.32, p.y*1.5)), 1.3));
+      float occl = 1.0 - smoothstep(0.994, 1.004, pl);
+      vec3 light = vec3(1.0) - exp(-acc*1.15);
+      float alpha = max(max(occl, 1.0 - T), 0.5);
+      gl_FragColor = vec4(light*edge*uFade, alpha*edge*uFade);
+    }`;
+  var GLSL_NOISE3 = `
+    float h31(vec3 p){ return fract(sin(dot(p, vec3(127.1,311.7,74.7))) * 43758.5453); }
+    float vn3(vec3 p){ vec3 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
+      return mix(mix(mix(h31(i), h31(i+vec3(1,0,0)), f.x), mix(h31(i+vec3(0,1,0)), h31(i+vec3(1,1,0)), f.x), f.y),
+                 mix(mix(h31(i+vec3(0,0,1)), h31(i+vec3(1,0,1)), f.x), mix(h31(i+vec3(0,1,1)), h31(i+vec3(1,1,1)), f.x), f.y), f.z); }
+    float fbm3(vec3 p){ float a = 0.5, s = 0.0; for (int i = 0; i < 5; i++) { s += a*vn3(p); p = p*2.02 + vec3(3.1,1.7,5.3); a *= 0.5; } return s; }
+  `;
+  var PULSAR_R = 22;
+  var PULSAR_VS = `varying vec3 vN; varying vec3 vP; varying vec3 vV;
+    void main(){ vP = position/` + PULSAR_R.toFixed(1) + `; vN = normalize(normalMatrix*normal); vec4 mv = modelViewMatrix*vec4(position,1.0); vV = normalize(-mv.xyz); gl_Position = projectionMatrix*mv; }`;
+  var PULSAR_FS = `precision highp float; uniform float uTime, uFlash; varying vec3 vN; varying vec3 vP; varying vec3 vV;
+    ` + GLSL_NOISE3 + `
+    void main(){
+      vec3 P = normalize(vP);
+      float n = fbm3(P*3.6 + vec3(0.0, uTime*0.12, 0.0));
+      float m = 0.5 + 0.5*sin(P.y*10.0 + n*13.0 + uTime*0.5);
+      float m2 = fbm3(P*9.0 - vec3(uTime*0.08));
+      vec3 deep = vec3(0.03,0.32,0.72), mid = vec3(0.25,0.8,1.0), hi = vec3(0.95,1.0,1.0);
+      vec3 c = mix(deep, mid, smoothstep(0.1, 0.7, m*0.6 + n*0.6));
+      c = mix(c, hi, smoothstep(0.62, 0.95, m*0.7 + m2*0.5));
+      float wave = pow(0.5 + 0.5*sin(abs(P.y)*16.0 - uTime*3.2 + n*2.0), 6.0);
+      c += vec3(0.5,0.95,1.0)*wave*0.7;
+      float fr = pow(1.0 - max(dot(normalize(vN), normalize(vV)), 0.0), 2.2);
+      c += vec3(0.45,0.9,1.0)*fr*1.3;
+      c *= 1.0 + 0.6*uFlash; c += vec3(0.4,0.8,1.0)*uFlash*0.25;
+      gl_FragColor = vec4(c, 1.0);
+    }`;
+  var BEAM_VS = `varying vec2 vUv; varying vec3 vN; varying vec3 vV;
+    void main(){ vUv = uv; vN = normalize(normalMatrix*normal); vec4 mv = modelViewMatrix*vec4(position,1.0); vV = normalize(-mv.xyz); gl_Position = projectionMatrix*mv; }`;
+  var BEAM_FS = `precision highp float; uniform vec3 uColor; uniform float uPow, uGain, uTime; varying vec2 vUv; varying vec3 vN; varying vec3 vV;
+    void main(){
+      float along = pow(max(1.0 - vUv.y, 0.0), uPow);
+      float fr = pow(abs(dot(normalize(vN), normalize(vV))), 1.6);
+      float pulse = 0.88 + 0.12*sin(vUv.y*40.0 - uTime*14.0);
+      gl_FragColor = vec4(uColor*along*fr*pulse*uGain, 1.0);
+    }`;
+  var RING_FS = `precision highp float; uniform float uTime; varying vec3 vP;
+    void main(){
+      float r = length(vP.xz);
+      float a = smoothstep(30.0, 36.0, r)*(1.0 - smoothstep(44.0, 80.0, r));
+      a *= 0.55 + 0.45*sin(r*0.35 - uTime*2.0);
+      gl_FragColor = vec4(vec3(0.3,0.8,1.0)*a*0.55, 1.0);
+    }`;
+  var sgrBody, crabBody, bhU, bhMesh, crabObj;
+  (function () {
+    var lv = levels[1], inner = lv.spin;
+    // Sagittarius A*: a lensing shader on a quad that always faces the camera
+    bhU = { uTime: { value: 0 }, uElev: { value: 0.14 }, uRoll: { value: 0 }, uFade: { value: 0 } };
+    var bhMat = new THREE.ShaderMaterial({ uniforms: bhU, vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }', fragmentShader: BH_FS,
+      transparent: true, depthWrite: false, depthTest: false, blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor });
+    bhMesh = new THREE.Mesh(new THREE.PlaneGeometry(204, 204), bhMat); bhMesh.renderOrder = 20; bhMesh.frustumCulled = false; bhMesh.visible = false; inner.add(bhMesh);
+    (function () {                                       // the dense stars of the galactic bulge and the nucleus around the hole
+      var n = narrow ? 3600 : 8000, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), c = new THREE.Color();
+      for (var k = 0; k < n; k++) {
+        var nuc = k < n * 0.35, sx = nuc ? 26 : 150, sy = nuc ? 20 : 42, b = 0.45 + Math.random() * 0.55;
+        pos[k * 3] = gauss() * sx; pos[k * 3 + 1] = gauss() * sy; pos[k * 3 + 2] = gauss() * sx;
+        c.setRGB(1.0 * b, (0.82 + Math.random() * 0.1) * b, (0.55 + Math.random() * 0.2) * b); col[k * 3] = c.r; col[k * 3 + 1] = c.g; col[k * 3 + 2] = c.b;
+      }
+      var g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      var pts = new THREE.Points(g, lvMat(lv, 2.0, 0.9)); pts.frustumCulled = false; inner.add(pts);
+    })();
+    var sgrTilt = new THREE.Object3D();
+    sgrBody = { name: 'Sagittarius A*', isCosmos: true, close: true, level: 1, r: 0.001, group: inner, follow: inner, mesh: sgrTilt, tiltGroup: sgrTilt, userYaw: 0, dist: 150, el: 0.14, fact: '' };
+
+    // Crab Pulsar: marbled plasma sphere, energy waves and two spinning beams, in the Perseus arm
+    var crab = new THREE.Group(); crab.position.set(70, 4, 125); crab.visible = false; lv.group.add(crab);
+    var view = new THREE.Group(); crab.add(view);
+    var spin = new THREE.Group(); view.add(spin);
+    var uT = { value: 0 }, uF = { value: 0 }, beamMats = [];
+    var pSphere = new THREE.Mesh(
+      new THREE.SphereGeometry(PULSAR_R, 64, 48),
+      new THREE.ShaderMaterial({ uniforms: { uTime: uT, uFlash: uF }, vertexShader: PULSAR_VS, fragmentShader: PULSAR_FS })
+    );
+    spin.add(pSphere);
+
+    // Magnetic axis tilted relative to spin axis so beams sweep in a wide cone like a lighthouse
+    var axis = new THREE.Group();
+    axis.rotation.z = 0.48;
+    spin.add(axis);
+
+    function beam(r0, r1, len, color, pw, gain) {
+      var g = new THREE.CylinderGeometry(r1, r0, len, 24, 1, true);
+      g.translate(0, len / 2 + PULSAR_R * 0.75, 0);
+      var m = new THREE.ShaderMaterial({
+        uniforms: { uColor: { value: new THREE.Color(color) }, uPow: { value: pw }, uGain: { value: gain }, uTime: uT },
+        vertexShader: BEAM_VS, fragmentShader: BEAM_FS,
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide
+      });
+      m.userData.base = gain; beamMats.push(m);
+      var a = new THREE.Mesh(g, m), b = new THREE.Mesh(g, m);
+      b.rotation.x = Math.PI;
+      axis.add(a); axis.add(b);
+    }
+    beam(1.4, 4.4, 125, 0x7fe9ff, 0.7, 1.7);
+    beam(0.45, 1.4, 125, 0xffffff, 0.5, 2.2);
+    beam(3.8, 19, 125, 0x35b8ff, 1.2, 0.38);
+
+    var ring = new THREE.Mesh(
+      new THREE.RingGeometry(28, 78, 96, 1),
+      new THREE.ShaderMaterial({
+        uniforms: { uTime: uT },
+        vertexShader: 'varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+        fragmentShader: RING_FS,
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide
+      })
+    );
+    ring.rotation.x = -Math.PI / 2;
+    view.add(ring);
+
+    var halos = [[0x7fe9ff, 130, 0.5], [0x35b8ff, 260, 0.16]].map(function (q) {
+      var sp = lvSprite(lv, q[0], q[1], q[2], crab, true);
+      return { sp: sp, rec: lv.mats[lv.mats.length - 1], size: q[1], o: q[2] };
+    });
+    var crabTilt = new THREE.Object3D();
+    crabObj = { group: crab, view: view, spin: spin, axis: axis, pSphere: pSphere, uT: uT, uF: uF, beams: beamMats, halos: halos, qa: new THREE.Quaternion(), da: new THREE.Vector3(), cp: new THREE.Vector3(), tc: new THREE.Vector3(), tilt: crabTilt };
+    crabBody = { name: 'Crab Pulsar', isCosmos: true, close: true, level: 1, r: 0.001, group: crab, follow: crab, mesh: crabTilt, tiltGroup: crabTilt, userYaw: 0, dist: 165, el: 0.18, fact: '' };
+
+    // small markers so both can be found from far away
+    lvSprite(lv, 0xffd9a0, 36, 0.9, inner); lvSprite(lv, 0x9ff0ff, 40, 0.9, lv.group).position.set(70, 4, 125);
+  })();
+  var lg = levels[2].gals;
+  var andBody = { name: 'Andromeda', isCosmos: true, close: true, level: 2, r: 0.001, group: lg.and.wrap, follow: lg.and.wrap, mesh: lg.and.spin, tiltGroup: lg.and.tilt, dist: 560, el: 0.4, fact: '' };
+  var triBody = { name: 'Triangulum', isCosmos: true, close: true, level: 2, r: 0.001, group: lg.tri.wrap, follow: lg.tri.wrap, mesh: lg.tri.spin, tiltGroup: lg.tri.tilt, dist: 190, el: 0.4, fact: '' };
   var cosCam = [null, { t: new THREE.Vector3(0, 0, -330), dist: 4200, el: 0.62 }, { t: new THREE.Vector3(750, 120, -330), dist: 4400, el: 0.5 }, { t: new THREE.Vector3(0, 0, 0), dist: 4300, el: 0.45 }];
-  var cosBodies = [1, 2, 3].map(function (i) {
+  var lvBodies = [1, 2, 3].map(function (i) {
     return { name: ['', 'Milky Way', 'Local Group', 'Observable Universe'][i], isCosmos: true, level: i, r: 0.001, group: levels[i].group, mesh: levels[i].group, tiltGroup: levels[i].group, camT: cosCam[i].t, dist: cosCam[i].dist, el: cosCam[i].el, fact: '' };
   });
+  var levelStop = [null, lvBodies[0], lvBodies[1], lvBodies[2]];
+  var cosBodies = [lvBodies[0], sgrBody, crabBody, lvBodies[1], andBody, triBody, lvBodies[2]];   // Crab, Sgr A*, Milky Way, Local Group, M31, M33, Universe
+  lvBodies[0].zin = 'exit'; lvBodies[0].zout = sgrBody; sgrBody.zin = lvBodies[0]; sgrBody.zout = crabBody; crabBody.zin = sgrBody; crabBody.zout = lvBodies[1]; lvBodies[1].zin = crabBody;
   bodies = bodies.concat(cosBodies);
 
-  /* ---------- real textures (Solar System Scope + user supplied space images) ---------- */
+  /* ---------- real textures (Solar System Scope, CC BY 4.0) ---------- */
   (function () {
     var loader = new THREE.TextureLoader(), aniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
     function load(url, cb) {
@@ -591,6 +833,7 @@
   /* ---------- camera path, scroll, pointer ---------- */
   var P0 = new THREE.Vector3(150, 46, 640), T0 = new THREE.Vector3(-118, 0, 0);
   var P1 = new THREE.Vector3(0, 235, 300), T1 = new THREE.Vector3(0, 0, 4);
+  var scroller = $('scroller') || document.createElement('div');
   var pRaw = 0, pS = 0, pointer = { x: 0, y: 0, px: -999, py: -999, down: false };
   function readScroll() {
     if (mode === 'planet') return;
@@ -624,8 +867,8 @@
   var curTgt = T0.clone(), toPos = new THREE.Vector3(), toTgt = new THREE.Vector3();
   var vS = new THREE.Vector3(), vF = new THREE.Vector3(), vR = new THREE.Vector3(), vC = new THREE.Vector3(), vP = new THREE.Vector3(), vUp = new THREE.Vector3(0, 1, 0);
   var pui = $('pui');
-  var PD = window.PLANET_DATA.PD;
-  var ROW_LABELS = window.PLANET_DATA.ROW_LABELS;
+
+  var PD = COSMIC_DATA.PD, ROW_LABELS = COSMIC_DATA.ROW_LABELS;
 
   function overviewPose(ev, p, t) {
     p.lerpVectors(P0, P1, ev); t.lerpVectors(T0, T1, ev);
@@ -644,14 +887,15 @@
     var tf0 = Math.tan(camera.fov * Math.PI / 360);
     if (d.isCosmos) {
       var cd = d.dist * zoom;
-      t.copy(d.camT); p.set(t.x, t.y + Math.sin(d.el) * cd, t.z + Math.cos(d.el) * cd);
+      if (d.follow) d.follow.getWorldPosition(t); else t.copy(d.camT);
+      p.set(t.x, t.y + Math.sin(d.el) * cd, t.z + Math.cos(d.el) * cd);
       vF.copy(t).sub(p).normalize(); vR.crossVectors(vF, vUp).normalize();
       var ch = cd * tf0;
       if (portrait) { vC.crossVectors(vR, vF); t.addScaledVector(vC, -0.5 * ch); } else t.addScaledVector(vR, -0.4 * ch * asp);
       p.x += pointer.x * cd * 0.01; p.y += -pointer.y * cd * 0.008;
       return;
     }
-    if (d.isBelt) {
+    if (d.isBelt) {                                           // the camera floats inside the belt, looking across it
       p.copy(d.anchor).addScaledVector(d.u, -18 * zoom).addScaledVector(d.w, 30 * zoom); p.y += 4 * zoom;
       t.copy(d.anchor).addScaledVector(d.u, 6);
       vF.copy(t).sub(p).normalize(); vR.crossVectors(vF, vUp).normalize();
@@ -663,13 +907,13 @@
     var dist = portrait ? d.r * (d.rings ? 2.4 : 1.0) / (0.62 * tf0 * asp) : d.r * (d.rings ? 4.8 : 2.95);
     dist *= zoom;
     d.group.getWorldPosition(vP);
-    if (d.isSun) vS.set(0.35, 0, 0.94).normalize(); else vS.copy(vP).multiplyScalar(-1).normalize();
+    if (d.isSun) vS.set(0.35, 0, 0.94).normalize(); else vS.copy(vP).multiplyScalar(-1).normalize();   // direction from the body to the Sun
     for (var k = 0; k < 2; k++) {
       vF.copy(vS).applyAxisAngle(vUp, k === 0 ? 0.95 : -0.95);
       p.copy(vP).addScaledVector(vF, dist); p.y += dist * 0.1;
-      vF.copy(vP).sub(p).normalize();
-      vR.crossVectors(vF, vUp).normalize();
-      if (vS.dot(vR) < 0) break;
+      vF.copy(vP).sub(p).normalize();                       // camera forward
+      vR.crossVectors(vF, vUp).normalize();                 // camera right
+      if (vS.dot(vR) < 0) break;                            // keep the Sun on the left of the screen
     }
     var tf = Math.tan(camera.fov * Math.PI / 360), halfH = dist * tf, halfW = halfH * asp;
     t.copy(vP);
@@ -684,33 +928,114 @@
   function lockScroll(on) {
     document.body.classList.toggle('in-planet', on);
   }
+  /* ---------- live NASA data (needs internet access to api.nasa.gov; set your own key in config.js) ---------- */
+  var NASA_KEY = (window.COSMIC_CONFIG && window.COSMIC_CONFIG.NASA_KEY) || 'DEMO_KEY', liveCache = {};
+  function isoDay(d) { return d.toISOString().slice(0, 10); }
+  function getJSON(url) {
+    var ctl = window.AbortController ? new AbortController() : null, to = setTimeout(function () { if (ctl) ctl.abort(); }, 10000);
+    return fetch(url, ctl ? { signal: ctl.signal } : {}).then(function (r) { clearTimeout(to); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+  }
+  function fmtKm(k) { return Math.round(k).toLocaleString('en-US') + ' km'; }
+  var LIVE = {
+    Sun: { title: 'SOLAR FLARES · LAST 30 DAYS', load: function () {
+      var e = new Date(), st = new Date(e.getTime() - 30 * 864e5);
+      return getJSON('https://api.nasa.gov/DONKI/FLR?startDate=' + isoDay(st) + '&endDate=' + isoDay(e) + '&api_key=' + NASA_KEY).then(function (list) {
+        list = Array.isArray(list) ? list.filter(function (f) { return f && f.classType; }) : [];
+        function rank(c) { return 'ABCMX'.indexOf(c.charAt(0)) * 100 + (parseFloat(c.slice(1)) || 0); }
+        var rows = [['FLARES RECORDED', String(list.length)]];
+        if (list.length) {
+          var big = list.slice().sort(function (a, b) { return rank(b.classType) - rank(a.classType); })[0];
+          rows.push(['STRONGEST', big.classType + ' · ' + String(big.peakTime || big.beginTime || '').slice(0, 10)]);
+          list.slice(-1).reverse().forEach(function (f) { rows.push(['RECENT', f.classType + ' · ' + String(f.peakTime || f.beginTime || '').replace('T', ' ').replace('Z', ' UTC')]); });
+        }
+        return { rows: rows, foot: 'X-class flares are the strongest, then M, C, B and A. Source: NASA DONKI.' };
+      });
+    } },
+    'Asteroid Belt': { title: 'NEAR-EARTH ASTEROIDS · NEXT 7 DAYS', load: function () {
+      var e = new Date(), en = new Date(e.getTime() + 6 * 864e5);
+      return getJSON('https://api.nasa.gov/neo/rest/v1/feed?start_date=' + isoDay(e) + '&end_date=' + isoDay(en) + '&api_key=' + NASA_KEY).then(function (j) {
+        var all = []; Object.keys(j.near_earth_objects || {}).forEach(function (k) { all = all.concat(j.near_earth_objects[k]); });
+        all = all.filter(function (a) { return a.close_approach_data && a.close_approach_data[0]; });
+        var rows = [['ASTEROIDS PASSING', String(all.length)], ['POTENTIALLY HAZARDOUS', String(all.filter(function (a) { return a.is_potentially_hazardous_asteroid; }).length)]];
+        if (all.length) {
+          all.sort(function (a, b) { return parseFloat(a.close_approach_data[0].miss_distance.kilometers) - parseFloat(b.close_approach_data[0].miss_distance.kilometers); });
+          var c = all[0], ca = c.close_approach_data[0], km = parseFloat(ca.miss_distance.kilometers);
+          rows.push(['CLOSEST', String(c.name).replace(/[()]/g, '')]);
+          rows.push(['MISS DISTANCE', fmtKm(km) + ' (' + (km / 384400).toFixed(1) + ' × Moon)']);
+          rows.push(['SPEED', (parseFloat(ca.relative_velocity.kilometers_per_hour) / 3600).toFixed(1) + ' km/s']);
+          if (c.estimated_diameter) rows.push(['SIZE (MAX)', Math.round(c.estimated_diameter.meters.estimated_diameter_max) + ' m']);
+        }
+        return { rows: rows, foot: 'These rocks orbit close to Earth. Most main-belt asteroids stay between Mars and Jupiter. Source: NASA NeoWs.' };
+      });
+    } },
+    Earth: { title: 'EARTH RIGHT NOW · DSCOVR EPIC', load: function () {
+      return getJSON('https://api.nasa.gov/EPIC/api/natural?api_key=' + NASA_KEY).then(function (list) {
+        var it = list && list[list.length - 1]; if (!it) throw new Error('empty');
+        var ds = String(it.date).slice(0, 10).split('-');
+        return { img: 'https://api.nasa.gov/EPIC/archive/natural/' + ds[0] + '/' + ds[1] + '/' + ds[2] + '/jpg/' + it.image + '.jpg?api_key=' + NASA_KEY,
+          rows: [['SATELLITE', 'DSCOVR · 1.5 million km away'], ['PHOTO TAKEN', String(it.date) + ' UTC']], foot: 'The sunlit side of Earth, as seen from the point between Earth and the Sun. Source: NASA EPIC.' };
+      });
+    } },
+    Mars: { title: 'LATEST PHOTO FROM CURIOSITY', load: function () {
+      return getJSON('https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/latest_photos?api_key=' + NASA_KEY).then(function (j) {
+        var ph = j && j.latest_photos && j.latest_photos[0]; if (!ph) throw new Error('empty');
+        return { img: String(ph.img_src).replace(/^http:/, 'https:'), rows: [['CAMERA', ph.camera.full_name], ['EARTH DATE', ph.earth_date], ['MARTIAN DAY (SOL)', String(ph.sol)]], foot: 'A real photo taken on the surface of Mars. Source: NASA Mars Rover Photos.' };
+      });
+    } }
+  };
+  function renderLive(box, L, r, err) {
+    box.hidden = false; box.textContent = '';
+    var h = document.createElement('div'); h.className = 'live-head';
+    var dot = document.createElement('i'); dot.className = 'live-dot' + (err ? ' off' : ''); h.appendChild(dot);
+    var t = document.createElement('span'); t.textContent = (err ? 'NASA · ' : 'LIVE · NASA · ') + L.title; h.appendChild(t); box.appendChild(h);
+    if (!r) { var m0 = document.createElement('p'); m0.className = 'live-msg'; m0.textContent = err || 'Connecting to NASA…'; box.appendChild(m0); return; }
+    if (r.img && /^https:\/\//.test(r.img)) { var im = document.createElement('img'); im.alt = L.title; im.referrerPolicy = 'no-referrer'; im.src = r.img; im.onerror = function () { im.remove(); }; box.appendChild(im); }
+    r.rows.forEach(function (q) {
+      var row = document.createElement('div'); row.className = 'row'; var a = document.createElement('span'); a.textContent = q[0]; var b = document.createElement('b'); b.textContent = q[1]; row.appendChild(a); row.appendChild(b); box.appendChild(row);
+    });
+    var f = document.createElement('p'); f.className = 'live-msg'; f.textContent = r.foot; box.appendChild(f);
+  }
+  function loadLive(d) {
+    var box = $('p-live'), L = d && LIVE[d.name];
+    if (!L) { box.hidden = true; return; }
+    if (liveCache[d.name]) { renderLive(box, L, liveCache[d.name]); return; }
+    renderLive(box, L, null);
+    L.load().then(function (r) { liveCache[d.name] = r; if (bodies[focusIdx] === d) renderLive(box, L, r); })
+      .catch(function () { if (bodies[focusIdx] === d) renderLive(box, L, null, 'Live NASA data could not be loaded. This needs internet access to api.nasa.gov (the published preview blocks it), and the free DEMO_KEY allows only a few requests per hour. Put your own free key in config.js.'); });
+  }
   function showData(on) {
     pui.classList.toggle('data', !!on);
+    if (on && focusIdx >= 0) loadLive(bodies[focusIdx]); else if (!on) $('p-live').hidden = true;
     $('p-explore').setAttribute('aria-expanded', on ? 'true' : 'false');
   }
-  function enterPlanet(i) { if (i < 0 || mode !== 'overview') return; showData(false); lockScroll(true); startTransition('planet', i, 4.2); }
+  function enterPlanet(i) { if (i < 0 || mode !== 'overview') return; showData(false); lockScroll(true); startTransition('planet', i, bodies[i].isCosmos ? 3.8 : 2.6); }
   function exitPlanet() {
     if (mode !== 'planet') return;
     showData(false); lockScroll(false);
     window.scrollTo(0, document.documentElement.scrollHeight); pRaw = 1; pS = 1;
-    startTransition('overview', -1, 3.5);
+    startTransition('overview', -1, 2.2);
   }
   function zoomBy(f) {
     if (mode !== 'planet' || !settled) return;
     var fb0 = bodies[focusIdx];
     zoomT = clamp(zoomT * f, 0.55, fb0.isCosmos ? 1.35 : 1.6);
-    if (fb0.isCosmos) {
-      if (zoomT > 1.3 && fb0.level < 3) goPlanet(focusIdx + 1);
-      else if (zoomT < 0.6) { if (fb0.level > 1) goPlanet(focusIdx - 1); else exitPlanet(); }
+    if (fb0.isCosmos) {                                   // zoom out: the level overview, then the next level; zoom in: the level below
+      if (zoomT > 1.3) {
+        var nx = fb0.zout || (fb0.close ? levelStop[fb0.level] : (fb0.level < 3 ? levelStop[fb0.level + 1] : null));
+        if (nx) goPlanet(bodies.indexOf(nx));
+      } else if (zoomT < 0.6) {
+        var pv = fb0.zin !== undefined ? fb0.zin : (fb0.close ? null : (fb0.level > 1 ? levelStop[fb0.level - 1] : 'exit'));
+        if (pv === 'exit') exitPlanet(); else if (pv) goPlanet(bodies.indexOf(pv));
+      }
       return;
     }
     if (zoomT > 1.3) exitPlanet();
   }
-  function goPlanet(j) { if (mode !== 'planet' || j === focusIdx || tr < 0.5) return; showData(false); startTransition('planet', j, 3.4); }
+  function goPlanet(j) { if (mode !== 'planet' || j === focusIdx || tr < 0.5) return; showData(false); startTransition('planet', j, bodies[j].isCosmos ? 3.4 : 1.9); }
   function fillPlanet(i) {
     var d = bodies[i], P = PD[d.name], n = bodies.length;
     $('p-eyebrow').textContent = (P.level || 'LEVEL 01') + ' · ' + P.type;
-    $('p-hint').textContent = d.isCosmos ? 'DRAG TO ROTATE · SCROLL TO CHANGE LEVEL' : 'DRAG TO ROTATE · SCROLL OUT TO LEAVE';
+    $('p-hint').textContent = d.close ? 'DRAG TO TILT · SCROLL OUT TO GO BACK' : d.isCosmos ? (d.level < 3 ? 'CLICK A LABEL TO FLY THERE · SCROLL TO CHANGE LEVEL' : 'DRAG TO ROTATE · SCROLL TO CHANGE LEVEL') : 'DRAG TO ROTATE · SCROLL OUT TO LEAVE';
     pui.classList.toggle('scrim', !!(d.isBelt || d.isCosmos));
     $('p-name').textContent = d.name; $('p-name').style.fontSize = d.name.length > 14 ? 'clamp(40px, 5.8vw, 84px)' : d.name.length > 8 ? 'clamp(52px, 9vw, 124px)' : '';
     $('p-tot').textContent = (n < 10 ? '0' : '') + n; $('p-tag').textContent = P.tag || 'MEASURED';
@@ -774,8 +1099,8 @@
       if (ovDrag && mode === 'overview') {
         var ox = e.clientX - ovDrag.x, oy = e.clientY - ovDrag.y;
         ovDrag.x = e.clientX; ovDrag.y = e.clientY; dragDist += Math.abs(ox) + Math.abs(oy); if (dragDist > 30) hasDragged = true;
-        ryT += ox * 0.006;
-        rpT = clamp(rpT - oy * 0.005, -2.3, 1.0);
+        ryT += ox * 0.006;                      // drag left: see the system from the left
+        rpT = clamp(rpT - oy * 0.005, -2.3, 1.0); // drag up: top view, drag down: bottom view
         return;
       }
       if (!drag || mode !== 'planet' || focusIdx < 0) return;
@@ -787,8 +1112,8 @@
     window.addEventListener('wheel', function (e) {
       if (mode !== 'planet') return;
       e.preventDefault();
-      if (!settled || time - settleTime < 0.9) return;
-      zoomBy(Math.exp(clamp(e.deltaY, -120, 120) * 0.0007));
+      if (!settled || time - settleTime < 1.4) return;
+      zoomBy(Math.exp(clamp(e.deltaY, -120, 120) * 0.0009));
     }, { passive: false });
     $('z-in').addEventListener('click', function () { zoomBy(1 / 1.25); });
     $('z-out').addEventListener('click', function () { zoomBy(1.25); });
@@ -800,7 +1125,11 @@
     window.cosmicExplorer = { state: function () { return { mode: mode, tr: tr, zoomT: zoomT, ry: ryT, rp: rpT }; }, open: function (name) { var i = bodies.findIndex(function (q) { return q.name.toLowerCase() === String(name).toLowerCase(); }); if (i >= 0) { if (mode === 'planet') goPlanet(i); else { window.scrollTo(0, document.documentElement.scrollHeight); pRaw = 1; pS = 1; enterPlanet(i); } } }, close: exitPlanet };
   })();
 
-  var hovered = null;
+  var hovered = null, toastTimer = 0;
+  function showToast(msg) {
+    var t = $('toast'); t.textContent = msg; t.classList.add('on');
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('on'); }, 3200);
+  }
   window.addEventListener('click', function (e) {
     if (e.target.closest && e.target.closest('button')) return;
     pointer.px = e.clientX; pointer.py = e.clientY;
@@ -824,7 +1153,7 @@
       screenInfo[i] = { x: sx, y: sy, r: rpx, vis: vis, lr: rpx };
     }
   }
-  function beltHit(i) {
+  function beltHit(i) {                       // is the pointer over the ring of rocks?
     var w = window.innerWidth, h = window.innerHeight, bd = 26, bx = 0, by = 0, found = false;
     for (var k = 0; k < beltSamples.length; k++) {
       tmp.copy(beltSamples[k]).project(camera);
@@ -835,7 +1164,7 @@
     if (found) { var s = screenInfo[i]; s.x = bx; s.y = by; s.r = 14; s.vis = true; }
     return found;
   }
-  function updateHover() {
+  function updateHover(force) {
     var best = null, bd = 1e9;
     if (pS > 0.6 && mode === 'overview' && tr >= 1 && cl < 0.02) {
       for (var i = 0; i < bodies.length; i++) {
@@ -865,24 +1194,56 @@
     orbT += dt * orbitSpeed; moonAng += dt * 1.6 * orbitSpeed;
     var fb = inPlanet ? bodies[focusIdx] : null;
     var clT = fb && fb.isCosmos ? fb.level : 0;
-    cl += (clT - cl) * (1 - Math.exp(-dt * 0.9)); if (Math.abs(cl - clT) < 0.012) cl = clT;
+    cl += (clT - cl) * (1 - Math.exp(-dt * 1.3)); if (Math.abs(cl - clT) < 0.012) cl = clT;
     solarGroup.scale.setScalar(Math.max(1e-4, Math.pow(LEVEL_K[1], cl))); solarGroup.visible = cl < 0.95;
     for (var li = 1; li <= 3; li++) {
       var lv = levels[li], dc = cl - li, ls = dc <= 0 ? Math.pow(1 / LEVEL_K[li], -dc) : Math.pow(LEVEL_K[li + 1] || 0.01, dc);
       lv.alpha = Math.abs(dc) < 0.01 ? 1 : clamp(1 - Math.abs(dc) * 1.35, 0, 1);
       lv.group.scale.setScalar(ls); lv.group.visible = lv.alpha > 0.01;
-      if (lv.group.visible) { lv.spin.rotation[lv.spinAxis || 'y'] += dt * lv.spinRate; lv.mats.forEach(function (q) { q.m.opacity = q.o * lv.alpha; }); lv.group.updateMatrixWorld(true); }
+      if (lv.group.visible) {
+        lv.spin.rotation[lv.spinAxis || 'y'] += dt * lv.spinRate;
+        lv.mats.forEach(function (q) { var k = lv.alpha; if (q.glow) k *= 1 - 0.85 * closeK + 0.6 * sgrK; if (q.plane && li === 1) k *= 1 - 0.93 * closeK1 + 0.6 * sgrK; q.m.opacity = q.o * k; });
+        lv.group.updateMatrixWorld(true);
+      }
     }
+    var ek = 1 - Math.exp(-dt * 2.2);
+    closeK += ((fb && fb.close ? 1 : 0) - closeK) * ek; closeK1 += ((fb && fb.close && fb.level === 1 ? 1 : 0) - closeK1) * ek;
+    labelK += ((fb && fb.isCosmos && !fb.close ? 1 : 0) - labelK) * (1 - Math.exp(-dt * 3));
+    sgrK += ((fb === sgrBody ? 1 : 0) - sgrK) * ek; crabK += ((fb === crabBody ? 1 : 0) - crabK) * ek;
+    bhU.uTime.value = time; bhU.uFade.value = sgrK; bhU.uElev.value = clamp(0.14 + sgrBody.mesh.rotation.x * 0.5, 0.03, 0.9); bhU.uRoll.value = sgrBody.userYaw * 0.6;
+    bhMesh.visible = sgrK > 0.01 && levels[1].group.visible;
+
+    crabObj.group.visible = crabK > 0.01 && levels[1].group.visible;
+    crabObj.group.scale.setScalar(0.05 + 0.95 * crabK);
+    crabObj.uT.value = time;
+    crabObj.spin.rotation.y += dt * 7.5;          // Fast, realistic pulsar lighthouse rotation
+    crabObj.pSphere.rotation.y += dt * 2.2;
+    if (crabObj.group.visible) {                  // lighthouse: flash when a beam sweeps towards the viewer
+      crabObj.axis.getWorldQuaternion(crabObj.qa);
+      crabObj.da.set(0, 1, 0).applyQuaternion(crabObj.qa);
+      crabObj.group.getWorldPosition(crabObj.cp);
+      crabObj.tc.copy(camera.position).sub(crabObj.cp).normalize();
+      var fl = Math.pow(Math.abs(crabObj.da.dot(crabObj.tc)), 6);
+      crabObj.uF.value = fl;
+      crabObj.beams.forEach(function (m) { m.uniforms.uGain.value = m.userData.base * (0.65 + 1.6 * fl); });
+      crabObj.halos.forEach(function (h) { h.rec.o = h.o * (0.65 + 1.6 * fl); h.sp.scale.setScalar(h.size * (1 + 0.7 * fl)); });
+    }
+    crabObj.view.rotation.x = 0.24 + crabBody.mesh.rotation.x;
+    crabObj.view.rotation.y = crabBody.userYaw;
+    crabObj.view.rotation.z = 0.16 + 0.06 * Math.sin(time * 1.5);
+
+    lg.and.spin.rotation.y += dt * 0.05; lg.tri.spin.rotation.y += dt * 0.06;
     sunDim += ((fb && fb.isSun ? 1 : 0) - sunDim) * (1 - Math.exp(-dt * 3));
     rocksVis += ((fb && fb.isBelt ? 1 : 0) - rocksVis) * (1 - Math.exp(-dt * 2.5));
     sunGlows.forEach(function (g) { g.material.opacity = g.userData.o * (1 - 0.82 * sunDim); });
     rockGroup.visible = rocksVis > 0.01; rockGroup.scale.setScalar(Math.max(0.001, rocksVis));
     zoom += (zoomT - zoom) * (1 - Math.exp(-dt * 6));
-    if (mode === 'overview' && pS < 0.5) {
+    if (mode === 'overview' && pS < 0.5) { // coming back to the intro: unwind any rotation
       ryT += (Math.round(ryT / 6.2832) * 6.2832 - ryT) * (1 - Math.exp(-dt * 3)); rpT += (0 - rpT) * (1 - Math.exp(-dt * 3));
     }
     ry += (ryT - ry) * (1 - Math.exp(-dt * 7)); rp += (rpT - rp) * (1 - Math.exp(-dt * 7));
 
+    // orbits and spins
     for (var i = 0; i < planets.length; i++) {
       var d = planets[i], a = d.ang + orbT * d.omega;
       d.group.position.set(Math.cos(a) * d.a, 0, Math.sin(a) * d.a);
@@ -894,6 +1255,7 @@
     sun.rotation.y += dt * 0.02;
     [sunBody, moonBody, beltBody].concat(cosBodies).forEach(function (b) { if (!(drag && bodies[focusIdx] === b)) b.tiltGroup.rotation.x *= (1 - Math.min(1, dt * 1.5)); });
 
+    // camera: blend from where it was to where it should be
     if (inPlanet) planetPose(focusIdx, toPos, toTgt); else overviewPose(e, toPos, toTgt);
     if (tr < 1) tr = Math.min(1, tr + dt / trDur);
     if (tr >= 1 && !settled) { settled = true; settleTime = time; }
@@ -905,6 +1267,7 @@
     starGroup.position.copy(camera.position);
     starGroup.rotation.x = e * 0.45; starGroup.rotation.y = time * 0.0025 * (reduce ? 0 : 1);
 
+    // welcome text, brand, hud
     var th = Math.max(smooth(0.0, 0.28, pS), pm);
     $('hero').style.opacity = String(1 - th);
     $('hero').style.transform = 'translate3d(0,' + (-th * 70).toFixed(1) + 'px,0) scale(' + (1 - th * 0.04).toFixed(4) + ')';
@@ -918,14 +1281,17 @@
     $('skip').style.pointerEvents = (pS > 0.7 || pm > 0.2) ? 'none' : 'auto';
     var vb = smooth(0.8, 0.95, pS) * (1 - pm), vbEl = $('vbtns');
     vbEl.style.opacity = String(vb); vbEl.style.visibility = vb < 0.05 ? 'hidden' : 'visible';
+    var crEl = document.querySelector('.credit'); if (crEl) { crEl.style.opacity = String(1 - vb); crEl.style.pointerEvents = vb > 0.3 ? 'none' : ''; }
     renderer.domElement.style.touchAction = (inPlanet || (mode === 'overview' && pS > 0.65)) ? 'none' : 'pan-y';
 
+    // planet page content
     var wantOn = inPlanet && tr > 0.55;
     if (wantOn) {
       if (uiIdx !== focusIdx) { fillPlanet(focusIdx); uiIdx = focusIdx; }
       if (!pui.classList.contains('on')) { pui.classList.add('on'); pui.inert = false; }
     } else if (pui.classList.contains('on')) { pui.classList.remove('on'); pui.inert = true; }
 
+    // labels, hover
     project();
     updateHover();
     var showLabels = smooth(0.7, 0.92, pS) * (window.innerWidth >= 700 ? 1 : 0) * (1 - pm);
@@ -946,7 +1312,8 @@
         tmp.copy(lb.pos); lb.parent.localToWorld(tmp); tmp.project(camera);
         var on = tmp.z < 1 && Math.abs(tmp.x) < 1.05 && Math.abs(tmp.y) < 1.05;
         lb.el.style.transform = 'translate(' + (((tmp.x * 0.5 + 0.5) * window.innerWidth) + lb.dx).toFixed(1) + 'px,' + (((-tmp.y * 0.5 + 0.5) * window.innerHeight) + lb.dy).toFixed(1) + 'px)';
-        lb.el.style.opacity = on ? String(clv.alpha * Math.min(1, pm) * smooth(0.75, 1, tr)) : '0';
+        var lop = on ? clv.alpha * Math.min(1, pm) * smooth(0.75, 1, tr) * labelK : 0;
+        lb.el.style.opacity = String(lop); if (lb.clk) lb.el.style.pointerEvents = lop > 0.5 ? 'auto' : 'none';
       });
     }
     if (hovered && pS > 0.6 && !inPlanet) {
@@ -965,6 +1332,7 @@
       document.body.style.cursor = (inPlanet && tr >= 1) ? (drag ? 'grabbing' : 'grab') : (!inPlanet && pS > 0.7 && tr >= 1 ? (ovDrag ? 'grabbing' : 'grab') : '');
     }
 
+    bhMesh.parent.getWorldQuaternion(qTmp); qTmp.invert(); bhMesh.quaternion.copy(qTmp).multiply(camera.quaternion);
     renderer.render(scene, camera);
     requestAnimationFrame(frame);
   }
