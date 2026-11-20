@@ -1,16 +1,5 @@
-window.PLANET_DATA = {
-  defs: [
-    { name: 'Mercury', a: 32, r: 2.6, tex: 'mercury', ang: 0.6, tilt: 0.03, spin: 0.25, fact: 'The smallest planet. One year lasts 88 days.' },
-    { name: 'Venus', a: 48, r: 4.4, tex: 'venus', ang: 2.4, tilt: 3.09, spin: -0.1, fact: 'The hottest surface, around 465 °C.', glow: [0xffd9a0, 2.6] },
-    { name: 'Earth', a: 65, r: 4.7, tex: 'earth', ang: 4.1, tilt: 0.41, spin: 0.7, fact: 'Our home, and the only world known to have life.', glow: [0x5aa0ff, 3.0], clouds: true, moon: true },
-    { name: 'Mars', a: 83, r: 3.4, tex: 'mars', ang: 5.5, tilt: 0.44, spin: 0.68, fact: 'Home of Olympus Mons, the tallest known volcano.', glow: [0xff8a5a, 4.2] },
-    { name: 'Jupiter', a: 126, r: 11.5, tex: 'jupiter', ang: 6.0, tilt: 0.05, spin: 1.4, fact: 'The largest planet. Its Great Red Spot is a giant storm.' },
-    { name: 'Saturn', a: 166, r: 9.6, tex: 'saturn', ang: 3.3, tilt: 0.47, spin: 1.2, fact: 'Famous for its wide rings of ice and rock.', rings: true },
-    { name: 'Uranus', a: 202, r: 6.6, tex: 'uranus', ang: 4.8, tilt: 1.7, spin: -0.8, fact: 'An ice giant that spins on its side.', glow: [0x9fe6ee, 3.2] },
-    { name: 'Neptune', a: 234, r: 6.3, tex: 'neptune', ang: 4.0, tilt: 0.5, spin: 0.9, fact: 'The windiest planet, with the fastest winds measured.', glow: [0x4f7cff, 3.2] }
-  ],
-
-  PD: {
+window.COSMIC_DATA = (function(){
+  var PD = {
     Mercury: { type: 'TERRESTRIAL PLANET', sub: 'The Swift Messenger',
       story: 'The closest planet to the Sun races around it in just 88 Earth days. Its cratered surface swings from about 430 °C in sunlight to −180 °C at night, because it has almost no air to hold the heat.',
       stats: [['57.9M', 'KM FROM THE SUN'], ['88 days', 'ONE YEAR'], ['167 °C', 'AVERAGE TEMP']],
@@ -60,7 +49,8 @@ window.PLANET_DATA = {
       story: 'Between Mars and Jupiter orbit more than a million known rocky bodies, the leftovers of a planet that never formed. All of them together weigh only about 3% as much as the Moon. The rocks are so far apart that spacecraft cross the belt safely.',
       stats: [['2.7 AU', 'AVERAGE DISTANCE'], ['3%', 'OF THE MOON’S MASS'], ['1M+', 'KNOWN ASTEROIDS']],
       rows: ['Between Mars and Jupiter', '2.2 – 3.2 AU · 330 – 480 million km', '≈ 2.4 × 10²¹ kg', 'Ceres · 940 km wide', 'Over 1 million', '≈ 3.3 – 5.7 Earth years', 'Hundreds of thousands of km'],
-      note: 'Belt figures are estimates and keep changing as new asteroids are found. The 3D rocks here are drawn much closer together than in real life, so that you can see them.' },
+      note: 'Belt figures are estimates and keep changing as new asteroids are found. The 3D rocks here are drawn much closer together than in real life, so that you can see them.' }
+,
     'Milky Way': { level: 'LEVEL 02', type: 'BARRED SPIRAL GALAXY', sub: 'Our Island of Stars', tag: 'ESTIMATED', src: 'Source: NASA and ESA galaxy data',
       labels: ['DIAMETER', 'STARS', 'AGE OF OLDEST STARS', 'SUN TO CENTRE', 'ONE SUN ORBIT', 'CENTRAL BLACK HOLE', 'GALAXY TYPE'],
       story: 'The Milky Way holds hundreds of billions of stars. The Sun sits in a quiet spiral arm, about 26,000 light-years from the centre, where a black hole called Sagittarius A* weighs about 4 million Suns. One trip around the galaxy takes the Sun roughly 230 million years.',
@@ -78,8 +68,32 @@ window.PLANET_DATA = {
       story: 'The observable universe is about 93 billion light-years wide, even though it is only 13.8 billion years old, because space itself has been stretching. It holds hundreds of billions of galaxies, joined in a web of filaments around giant empty voids.',
       stats: [['93 bn', 'LIGHT-YEARS ACROSS'], ['13.8 bn', 'YEARS OLD'], ['≈ 5%', 'ORDINARY MATTER']],
       rows: ['≈ 93 billion light-years', '13.8 billion years', '200 billion to 2 trillion', '≈ 5%', '≈ 27%', '≈ 68%', '2.725 K (−270.4 °C)'],
-      note: 'The web shown here is a sketch of the real pattern, not a map. The glowing shell is the edge of what light has had time to reach us from. Nothing is known beyond it.' }
-  },
-
-  ROW_LABELS: ['MEAN RADIUS', 'MASS', 'SURFACE GRAVITY', 'DISTANCE FROM SUN', 'ORBITAL PERIOD', 'MEAN TEMPERATURE', 'KNOWN MOONS']
-};
+      note: 'The web shown here is a sketch of the real pattern, not a map. The glowing shell is the edge of what light has had time to reach us from. Nothing is known beyond it.' },
+    'Sagittarius A*': { level: 'LEVEL 02', type: 'SUPERMASSIVE BLACK HOLE', sub: 'The Heart of the Milky Way', tag: 'MEASURED', src: 'Source: NASA, ESO and Event Horizon Telescope',
+      labels: ['MASS', 'DISTANCE FROM EARTH', 'EVENT HORIZON RADIUS', 'FIRST IMAGED', 'STAR S2 ORBIT', 'S2 FASTEST SPEED', 'TYPE'],
+      story: 'At the very centre of the Milky Way sits a black hole with the mass of about 4.3 million Suns. Its pull is so strong that stars race around it in orbits as short as 16 years. In 2022 the Event Horizon Telescope took the first picture of the glowing ring of hot gas around it.',
+      stats: [['4.3M', 'SUNS IN MASS'], ['26,700', 'LIGHT-YEARS AWAY'], ['12.7M km', 'EVENT HORIZON RADIUS']],
+      rows: ['≈ 4.3 million Suns', '≈ 26,700 light-years', '≈ 12.7 million km', 'May 2022 · Event Horizon Telescope', '≈ 16 years', '≈ 8,000 km/s', 'Supermassive black hole'],
+      note: 'This view is a computer model of how gravity bends light, not a photograph. The real black hole is seen only as a faint ring in radio waves. Astronomers Reinhard Genzel and Andrea Ghez shared the 2020 Nobel Prize in Physics for finding it.' },
+    'Crab Pulsar': { level: 'LEVEL 02', type: 'PULSAR · NEUTRON STAR', sub: 'The Lighthouse of Taurus', tag: 'MEASURED', src: 'Source: NASA Chandra and Goddard',
+      labels: ['LOCATION', 'DISTANCE FROM EARTH', 'SPIN PERIOD', 'SIZE', 'MASS', 'BORN FROM', 'MAGNETIC FIELD'],
+      story: 'A pulsar is the spinning core of a star that exploded. The Crab Pulsar is only about 20 km wide, yet it is heavier than the Sun, and it spins about 30 times every second. Its beams sweep past Earth like a lighthouse. Astronomers saw the explosion that made it in the year 1054.',
+      stats: [['33 ms', 'ONE SPIN'], ['≈ 20 km', 'ACROSS'], ['1.4 Suns', 'OF MASS']],
+      rows: ['Crab Nebula · Taurus', '≈ 6,500 light-years', '≈ 33 milliseconds', '≈ 20 km across', '≈ 1.4 Suns', 'Supernova seen in 1054', '≈ 10¹² gauss'],
+      note: 'In this model the beams are drawn much brighter and wider than in real life, and the star is drawn far larger than its true size.' },
+    Andromeda: { level: 'LEVEL 03', type: 'SPIRAL GALAXY · M31', sub: 'Our Great Neighbour', tag: 'ESTIMATED', src: 'Source: NASA and ESA galaxy data',
+      labels: ['DISTANCE FROM EARTH', 'DIAMETER', 'STARS', 'MASS', 'APPROACH SPEED', 'TYPE', 'SEEN FROM EARTH'],
+      story: 'Andromeda is the nearest large galaxy to the Milky Way, and the farthest thing most people can see with their own eyes. It holds about a trillion stars. It is moving towards us at about 110 km/s, and the two galaxies may merge in several billion years.',
+      stats: [['2.5M', 'LIGHT-YEARS AWAY'], ['≈ 1 trillion', 'STARS'], ['110 km/s', 'TOWARDS THE MILKY WAY']],
+      rows: ['≈ 2.5 million light-years', '≈ 220,000 light-years', '≈ 1 trillion', '≈ 1 – 1.5 trillion Suns', '≈ 110 km/s', 'Spiral galaxy', 'A faint smudge, without a telescope'],
+      note: 'Andromeda is drawn here as a model, tilted and enlarged so that it stays visible. In reality it is about twice as wide as the Milky Way.' },
+    Triangulum: { level: 'LEVEL 03', type: 'SPIRAL GALAXY · M33', sub: 'The Pinwheel Next Door', tag: 'ESTIMATED', src: 'Source: NASA and ESA galaxy data',
+      labels: ['DISTANCE FROM EARTH', 'DIAMETER', 'STARS', 'RANK IN LOCAL GROUP', 'BIG STAR NURSERY', 'TYPE', 'CONSTELLATION'],
+      story: 'Triangulum is the third-largest galaxy in the Local Group, about half as wide as the Milky Way. It is so rich in young stars that it holds NGC 604, one of the biggest star-forming regions known. Under very dark skies it can be seen without a telescope.',
+      stats: [['2.7M', 'LIGHT-YEARS AWAY'], ['≈ 40 bn', 'STARS'], ['≈ 60,000', 'LIGHT-YEARS ACROSS']],
+      rows: ['≈ 2.7 million light-years', '≈ 60,000 light-years', '≈ 40 billion', 'Third largest', 'NGC 604', 'Spiral galaxy', 'Triangulum'],
+      note: 'Triangulum is drawn here as a model, tilted and enlarged so that it stays visible.' }
+  };
+  var ROW_LABELS = ['MEAN RADIUS', 'MASS', 'SURFACE GRAVITY', 'DISTANCE FROM SUN', 'ORBITAL PERIOD', 'MEAN TEMPERATURE', 'KNOWN MOONS'];
+  return {PD: PD, ROW_LABELS: ROW_LABELS};
+})();
